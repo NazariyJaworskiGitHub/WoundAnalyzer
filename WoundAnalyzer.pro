@@ -5,6 +5,7 @@
 #-------------------------------------------------
 CONFIG += c++11
 CONFIG += no_keywords
+CONFIG += console
 
 QT       += core gui
 
@@ -15,10 +16,11 @@ TEMPLATE = app
 
 
 #OpenCV
-INCLUDEPATH += e:\OpenCV_2.4.13\opencv\build\include
+INCLUDEPATH += e:\OpenCV_2.4.13\opencv\localBuild\include
 LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_core2413.dll.a
 LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_highgui2413.dll.a
 LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_imgproc2413.dll.a
+LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_photo2413.dll.a
 LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_video2413.dll.a
 
 SOURCES += main.cpp\
