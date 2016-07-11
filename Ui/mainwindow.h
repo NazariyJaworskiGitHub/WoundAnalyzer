@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#include "Ui/databaseconnectionwidget.h"
+
 namespace Ui {
 class MainWindow;
 }

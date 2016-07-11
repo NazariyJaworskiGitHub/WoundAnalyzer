@@ -7,7 +7,9 @@ CONFIG += c++11
 CONFIG += no_keywords
 CONFIG += console
 
-QT       += core gui
+QT       += core
+QT       += gui
+QT       += sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -24,8 +26,17 @@ LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_photo2413.dll.a
 LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_video2413.dll.a
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+    Ui/mainwindow.cpp \
+    DataBase/databasemanager.cpp \
+    Utilities/Logger/logger.cpp \
+    Ui/databaseconnectionwidget.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += Ui/mainwindow.h \
+    DataBase/databasemanager.h \
+    Utilities/Logger/logger.h \
+    Utilities/Logger/loggerprivate.h \
+    Utilities/timer.h \
+    Ui/databaseconnectionwidget.h
 
-FORMS    += mainwindow.ui
+FORMS    += Ui/mainwindow.ui \
+    Ui/databaseconnectionwidget.ui
