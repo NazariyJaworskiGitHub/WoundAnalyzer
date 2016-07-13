@@ -10,7 +10,6 @@
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlError>
 
-
 /// Holds all functionality related to database
 /// Use for singe MySQL Database managment
 class DatabaseManager : public QObject
@@ -26,17 +25,16 @@ class DatabaseManager : public QObject
     public : bool isConnected() const {return _isConnectedFlag;}
         /// Here should be QSqlDatabase::lastError()
     public : QSqlError lastError() const;
-        /// Common constructor,
-        /// parent not used
-
+        /// Connect to database
     public : bool connectToDatabase(
                 QString hName, QString dbName, QString uName, QString password);
         /// Common destructor
-    public : void saveConnectionsToFile(
-                QString dbConnectionsFilename = "DBConnections.txt");
+    public : void saveConnectionsToFile(const QList<QStringList> &refToConnections,
+                QString dbConnectionsFilename = "DBConnections.txt") const;
     public : QList<QStringList> loadConnectionsFromFile(
-                QString dbConnectionsFilename = "DBConnections.txt");
-
+                QString dbConnectionsFilename = "DBConnections.txt") const;
+        /// Common constructor,
+        /// parent not used
     private: DatabaseManager(QObject *parent = nullptr);
         /// Try to connect to database by given data, returns false if fail or true
         /// opened connection will has name _myDatabaseConnectionName

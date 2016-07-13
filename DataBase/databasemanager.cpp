@@ -4,6 +4,7 @@
 #include <QTextStream>
 #include <QStringList>
 
+#define DATABASENAME "myDatabase"
 DatabaseManager::DatabaseManager(QObject *parent):
     QObject(parent),
     _isConnectedFlag(false)
@@ -14,7 +15,7 @@ bool DatabaseManager::connectToDatabase(
         QString hName, QString dbName, QString uName, QString password)
 {
     QSqlDatabase _db = QSqlDatabase::addDatabase(
-                "QMYSQL",QLatin1String(QSqlDatabase::defaultConnection));
+                "QMYSQL",DATABASENAME);
     _db.setHostName(hName);
     _db.setDatabaseName(dbName);
     _db.setUserName(uName);
@@ -24,16 +25,24 @@ bool DatabaseManager::connectToDatabase(
     return _isConnectedFlag;
 }
 
-void DatabaseManager::saveConnectionsToFile(QString dbConnectionsFilename)
+void DatabaseManager::saveConnectionsToFile(const QList<QStringList> &refToConnections,
+                                            QString dbConnectionsFilename) const
 {
-//    QFile _dbConnectionsFile(dbConnectionsFilename);
-//    _dbConnectionsFile.open(QIODevice::Text | QIODevice::WriteOnly);
-//    ///TODO
-//    _dbConnectionsFile.flush();
-//    _dbConnectionsFile.close();
+    QFile _dbConnectionsFile(dbConnectionsFilename);
+    _dbConnectionsFile.open(QIODevice::Text | QIODevice::WriteOnly);
+
+    QTextStream _textStream(&_dbConnectionsFile);
+
+    for(auto i: refToConnections)
+    {
+        for(auto j: i)
+            _textStream << j << ' ';
+        _textStream << '\n';
+    }
+    _dbConnectionsFile.close();
 }
 
-QList<QStringList> DatabaseManager::loadConnectionsFromFile(QString dbConnectionsFilename)
+QList<QStringList> DatabaseManager::loadConnectionsFromFile(QString dbConnectionsFilename) const
 {
     QList<QStringList> _connections;
     try
@@ -42,12 +51,29 @@ QList<QStringList> DatabaseManager::loadConnectionsFromFile(QString dbConnection
         _dbConnectionsFile.open(QIODevice::Text | QIODevice::ReadOnly);
 
         QTextStream _textStream(&_dbConnectionsFile);
-        QStringList _qstrData;
-        //ConnectionName HostName DatabaseName UserName Password
         while (!_textStream.atEnd())
         {
-            _qstrData << _textStream.readLine();
-            _connections.push_back(_qstrData);
+            QString _qstrData = _textStream.readLine();
+
+            for(int k=0;;k+=5)  //ConnectionName HostName DatabaseName UserName Password
+            {
+                // ConnectionName
+                QStringList _connection(_qstrData.section(' ',k,k,QString::SectionSkipEmpty));
+                if(!_connection[0].size())
+                    break;
+                else
+                {
+                    // HostName
+                    _connection += _qstrData.section(' ',k+1,k+1,QString::SectionSkipEmpty);
+                    // DatabaseName
+                    _connection += _qstrData.section(' ',k+2,k+2,QString::SectionSkipEmpty);
+                    // UserName
+                    _connection += _qstrData.section(' ',k+3,k+3,QString::SectionSkipEmpty);
+                    // Password
+                    _connection += _qstrData.section(' ',k+4,k+4,QString::SectionSkipEmpty);
+                    _connections.push_back(_connection);
+                }
+            }
         }
         _dbConnectionsFile.close();
     }
@@ -61,8 +87,7 @@ QList<QStringList> DatabaseManager::loadConnectionsFromFile(QString dbConnection
 
 QSqlError DatabaseManager::lastError() const
 {
-    return QSqlDatabase::database(
-                QLatin1String(QSqlDatabase::defaultConnection), false).lastError();
+    return QSqlDatabase::database(DATABASENAME, false).lastError();
 }
 
 DatabaseManager::~DatabaseManager()
@@ -70,11 +95,10 @@ DatabaseManager::~DatabaseManager()
     if(_isConnectedFlag)
     {
         {   //barcet statement for local variable _db
-            QSqlDatabase _db = QSqlDatabase::database(
-                        QLatin1String(QSqlDatabase::defaultConnection), false);
+            QSqlDatabase _db = QSqlDatabase::database(DATABASENAME, false);
             _db.close();
         }
-        QSqlDatabase::removeDatabase(QLatin1String(QSqlDatabase::defaultConnection));
+        QSqlDatabase::removeDatabase(DATABASENAME);
     }
 }
 

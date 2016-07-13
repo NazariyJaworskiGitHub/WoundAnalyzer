@@ -14,7 +14,7 @@ QT       += sql
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = WoundAnalyzer
-TEMPLATE = app
+#TEMPLATE = app
 
 
 #OpenCV
@@ -29,14 +29,19 @@ SOURCES += main.cpp\
     Ui/mainwindow.cpp \
     DataBase/databasemanager.cpp \
     Utilities/Logger/logger.cpp \
-    Ui/databaseconnectionwidget.cpp
+    Ui/databaseconnectionwidget.cpp \
+    Ui/databaseconnectionedititemwidget.cpp
 
 HEADERS  += Ui/mainwindow.h \
     DataBase/databasemanager.h \
     Utilities/Logger/logger.h \
     Utilities/Logger/loggerprivate.h \
     Utilities/timer.h \
-    Ui/databaseconnectionwidget.h
+    Ui/databaseconnectionwidget.h \
+    Ui/databaseconnectioneditwidget.h \
+    Ui/databaseconnectionedititemwidget.h \
+    Ui/databaseconnectioneditsubitemwidget.h
 
 FORMS    += Ui/mainwindow.ui \
-    Ui/databaseconnectionwidget.ui
+    Ui/databaseconnectionwidget.ui \
+    Ui/databaseconnectionedititemwidget.ui

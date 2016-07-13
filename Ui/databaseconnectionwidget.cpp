@@ -3,25 +3,27 @@
 
 #include <QMessageBox>
 
-void DatabaseConnectionWidget::_fillConnectionsList()
+void DatabaseConnectionWidget::_loadConnections()
 {
     _myConnectionsData.clear();
-    ui->comboBox_Connections->clear();
     _myConnectionsData = DatabaseManager::instance()->loadConnectionsFromFile();
+    _fillConnectionsList();
+}
+
+void DatabaseConnectionWidget::_fillConnectionsList()
+{
+    ui->comboBox_Connections->blockSignals(true);
+    ui->comboBox_Connections->clear();
+    ui->comboBox_Connections->blockSignals(false);
     if(!_myConnectionsData.empty())
     {
         for(auto _connection : _myConnectionsData)
             ui->comboBox_Connections->addItem(_connection[0]);
         ui->pushButton_Connect->setEnabled(true);
-        _myIndexOfSelectedConnection = 0;   //First connection
-        ui->lineEdit_HostName->setText(_myConnectionsData[0][1]);
-        ui->lineEdit_DatabaseName->setText(_myConnectionsData[0][2]);
-        ui->lineEdit_UserName->setText(_myConnectionsData[0][3]);
     }
     else
     {
         ui->pushButton_Connect->setDisabled(true);
-        _myIndexOfSelectedConnection = -1;
         ui->comboBox_Connections->addItem("No known connections");
         ui->lineEdit_HostName->setText("");
         ui->lineEdit_DatabaseName->setText("");
@@ -31,13 +33,12 @@ void DatabaseConnectionWidget::_fillConnectionsList()
 
 DatabaseConnectionWidget::DatabaseConnectionWidget(QWidget *parent) :
     QDialog(parent),
-    _myIndexOfSelectedConnection(-1),
     ui(new Ui::DatabaseConnectionWidget)
 {
     ui->setupUi(this);
 
     this->setWindowTitle("Connect to database");
-    _fillConnectionsList();
+    _loadConnections();
 }
 
 DatabaseConnectionWidget::~DatabaseConnectionWidget()
@@ -47,16 +48,16 @@ DatabaseConnectionWidget::~DatabaseConnectionWidget()
 
 void DatabaseConnectionWidget::on_pushButton_Connect_clicked()
 {
-    if(_myIndexOfSelectedConnection!=-1)
+    if(!_myConnectionsData.empty())
     // i.e. if there is a connection item. Not necessary to check, becouse,
     // _myConnectButton will be disabled at _fillConnectionsList()
     {
+        int _index = ui->comboBox_Connections->currentIndex();
         if(!DatabaseManager::instance()->connectToDatabase(
-                    _myConnectionsData[_myIndexOfSelectedConnection][1],
-                    _myConnectionsData[_myIndexOfSelectedConnection][2],
-                    _myConnectionsData[_myIndexOfSelectedConnection][3],
-                    //username is the password
-                    _myConnectionsData[_myIndexOfSelectedConnection][3]))
+                    _myConnectionsData[_index][1],
+                    _myConnectionsData[_index][2],
+                    _myConnectionsData[_index][3],
+                    _myConnectionsData[_index][4]))
         {
             QMessageBox msgBox;
             msgBox.setText("Connection failed");
@@ -69,26 +70,36 @@ void DatabaseConnectionWidget::on_pushButton_Connect_clicked()
     }
     else
     {
-        /// \todo
+        // it impossible to go here - button should be not active
     }
 }
 
 void DatabaseConnectionWidget::on_pushButton_Cancel_clicked()
 {
-    QMessageBox msgBox;
-    msgBox.setText("Connection canceled");
-    msgBox.setInformativeText("You have to connect to some database");
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.setIcon(QMessageBox::Information);
-    msgBox.exec();
+//    QMessageBox msgBox;
+//    msgBox.setText("Connection canceled");
+//    msgBox.setInformativeText("You have to connect to some database");
+//    msgBox.setStandardButtons(QMessageBox::Ok);
+//    msgBox.setIcon(QMessageBox::Information);
+//    msgBox.exec();
+    /// \todo exit application
+    this->reject();
 }
 
 void DatabaseConnectionWidget::on_pushButton_Edit_clicked()
 {
-//    this->hide();
-//    DBCEditWidget _dbcew(true, nullptr, _myInternalStorage);
-//    _dbcew.exec();
-//    _fillConnectionsList(true, _myInternalStorage);
-//    this->show();
-    /// \todo
+    DatabaseConnectionEditWidget _dbcew(_myConnectionsData, this);
+    _dbcew.exec();
+    _fillConnectionsList();
+    DatabaseManager::instance()->saveConnectionsToFile(_myConnectionsData);
+}
+
+void DatabaseConnectionWidget::on_comboBox_Connections_currentIndexChanged(int index)
+{
+    if(!_myConnectionsData.empty())
+    {
+        ui->lineEdit_HostName->setText(_myConnectionsData[index][1]);
+        ui->lineEdit_DatabaseName->setText(_myConnectionsData[index][2]);
+        ui->lineEdit_UserName->setText(_myConnectionsData[index][3]);
+    }
 }

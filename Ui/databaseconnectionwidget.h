@@ -4,10 +4,24 @@
 #include <QDialog>
 #include "DataBase/databasemanager.h"
 
+#include "Ui/databaseconnectioneditwidget.h"
+
 namespace Ui {
 class DatabaseConnectionWidget;
 }
 
+/// Represents the user-interface for database connection \n
+/// <tt> +------------+------------+ </tt>\n
+/// <tt> |Connections |  ComboBox  | </tt>\n
+/// <tt> +------------+------------+ </tt>\n
+/// <tt> |HostName    |............| </tt>\n
+/// <tt> |DatabaseName|............| </tt>\n
+/// <tt> |UserName    |............| </tt>\n
+/// <tt> +--------+---+---+--------+ </tt>\n
+/// <tt> |Connect | Edit  | Cancel | </tt>\n
+/// <tt> +--------+-------+--------+ </tt>\n
+///
+/// Emits accept() on connection and reject() otherwise
 class DatabaseConnectionWidget : public QDialog
 {
     Q_OBJECT
@@ -16,19 +30,7 @@ class DatabaseConnectionWidget : public QDialog
         /// data can be selected by ComboBox
     private: QList<QStringList> _myConnectionsData;
 
-        /// Use to store index of selected connection from myConnectionsData,
-        /// or \c -1 if last is empty
-    private: int _myIndexOfSelectedConnection;
-
-        /// Fills ComboBox by saved data:
-        /// 1) clear the ComboBox, clear the _myConnectionsData;
-        /// 2) try to read data from file;
-        /// 3) if not empty, fill _myConnectionsData, fill the
-        /// ComboBox, make the Connect button enabled,
-        /// set the _myIndexOfSelectedConnection = 0;
-        /// 4) elese, make the Connect button disabled,
-        /// set the _myIndexOfSelectedConnection = -1, add "No known connections"
-        /// item to the ComboBox;
+    private: void _loadConnections();
     private: void _fillConnectionsList();
 
     public : explicit DatabaseConnectionWidget(QWidget *parent = 0);
@@ -40,6 +42,8 @@ private Q_SLOTS:
     void on_pushButton_Cancel_clicked();
 
     void on_pushButton_Edit_clicked();
+
+    void on_comboBox_Connections_currentIndexChanged(int index);
 
 private: Ui::DatabaseConnectionWidget *ui;
 };
