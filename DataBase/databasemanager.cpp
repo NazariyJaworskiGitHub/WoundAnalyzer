@@ -16,6 +16,7 @@ bool DatabaseManager::connectToDatabase(
 {
     QSqlDatabase _db = QSqlDatabase::addDatabase(
                 "QMYSQL",DATABASENAME);
+//    _db.setDatabaseName("Driver={Microsoft Access Driver (*.mdb, *.accdb)};DSN='';DBQ=WoundData.mdb");
     _db.setHostName(hName);
     _db.setDatabaseName(dbName);
     _db.setUserName(uName);

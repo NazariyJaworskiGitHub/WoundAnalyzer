@@ -1,10 +1,12 @@
 #ifndef DATABASEMANAGER_H
 #define DATABASEMANAGER_H
 
-/// \warning make shure that you are using compiler native libstdc...dll,
-/// but not QT libstdc...dll, or it causes errors
-/// see http://forum.qt.io/topic/45306/solved-runtime-error-with-mingw-ifstream-qt-creator/11
-#include <fstream>
+/// \warning don't forget qsqlmysql.dll and libmysql.dll
+
+///// \warning make shure that you are using compiler native libstdc...dll,
+///// but not QT libstdc...dll, or it causes errors
+///// see http://forum.qt.io/topic/45306/solved-runtime-error-with-mingw-ifstream-qt-creator/11
+//#include <fstream>
 
 #include <QObject>
 #include <QtSql/QSqlDatabase>

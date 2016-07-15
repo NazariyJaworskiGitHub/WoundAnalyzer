@@ -3,7 +3,11 @@
 
 #include <QMainWindow>
 
+#include <QFileDialog>
+
 #include "Ui/databaseconnectionwidget.h"
+
+#include "Image/imagemanager.h"
 
 namespace Ui {
 class MainWindow;
@@ -19,6 +23,9 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+private Q_SLOTS:
+    void on_actionOpen_triggered();
 };
 
 #endif // MAINWINDOW_H

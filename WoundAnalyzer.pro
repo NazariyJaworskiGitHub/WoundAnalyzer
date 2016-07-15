@@ -19,18 +19,24 @@ TARGET = WoundAnalyzer
 
 #OpenCV
 INCLUDEPATH += e:\OpenCV_2.4.13\opencv\localBuild\include
-LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_core2413.dll.a
-LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_highgui2413.dll.a
-LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_imgproc2413.dll.a
-LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_photo2413.dll.a
-LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_video2413.dll.a
+#LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_core2413.dll.a
+#LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_highgui2413.dll.a
+#LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_imgproc2413.dll.a
+#LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_photo2413.dll.a
+#LIBS += e:\OpenCV_2.4.13\opencv\localBuild\lib\libopencv_video2413.dll.a
+LIBS += e:\OpenCV_2.4.13\opencv\localBuild_x32\lib\libopencv_core2413.dll.a
+LIBS += e:\OpenCV_2.4.13\opencv\localBuild_x32\lib\libopencv_highgui2413.dll.a
+LIBS += e:\OpenCV_2.4.13\opencv\localBuild_x32\lib\libopencv_imgproc2413.dll.a
+LIBS += e:\OpenCV_2.4.13\opencv\localBuild_x32\lib\libopencv_photo2413.dll.a
+LIBS += e:\OpenCV_2.4.13\opencv\localBuild_x32\lib\libopencv_video2413.dll.a
 
 SOURCES += main.cpp\
     Ui/mainwindow.cpp \
     DataBase/databasemanager.cpp \
     Utilities/Logger/logger.cpp \
     Ui/databaseconnectionwidget.cpp \
-    Ui/databaseconnectionedititemwidget.cpp
+    Ui/databaseconnectionedititemwidget.cpp \
+    Image/imagemanager.cpp
 
 HEADERS  += Ui/mainwindow.h \
     DataBase/databasemanager.h \
@@ -40,7 +46,8 @@ HEADERS  += Ui/mainwindow.h \
     Ui/databaseconnectionwidget.h \
     Ui/databaseconnectioneditwidget.h \
     Ui/databaseconnectionedititemwidget.h \
-    Ui/databaseconnectioneditsubitemwidget.h
+    Ui/databaseconnectioneditsubitemwidget.h \
+    Image/imagemanager.h
 
 FORMS    += Ui/mainwindow.ui \
     Ui/databaseconnectionwidget.ui \
