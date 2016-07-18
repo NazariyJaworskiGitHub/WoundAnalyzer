@@ -4,10 +4,9 @@
 #include <QMainWindow>
 
 #include <QFileDialog>
+#include <QMessageBox>
 
 #include "Ui/databaseconnectionwidget.h"
-
-#include "Image/imagemanager.h"
 
 namespace Ui {
 class MainWindow;
@@ -26,6 +25,9 @@ private:
 
 private Q_SLOTS:
     void on_actionOpen_triggered();
+    void on_actionPolygon_toggled(bool arg1);
+    void on_actionClear_Polygon_triggered();
+    void on_actionAbout_triggered();
 };
 
 #endif // MAINWINDOW_H
