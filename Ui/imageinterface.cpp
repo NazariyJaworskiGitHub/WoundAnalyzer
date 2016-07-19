@@ -1,36 +1,62 @@
 #include "imageinterface.h"
-#include <iostream>
-ImageInterface::ImageInterface(QWidget *parent):QLabel(parent)
+
+ImageInterface::ImageInterface(QWidget *parent):
+    QLabel(parent),
+    _managementMode(COMMON_MODE)
 {
     setAcceptDrops(true);
 }
 
 void ImageInterface::openImage(QString fileName)
 {
-    _polygon.clear();
     ImageManager::instance()->openImage(fileName);
-    this->setPixmap(ImageManager::instance()->getImageAsQPixmap());
+    Q_EMIT updateFilename_signal(fileName);
+    clearStuff();
 }
 
-void ImageInterface::cleanPolygon()
+void ImageInterface::clearStuff()
 {
     _polygon.clear();
+    _rulerPoints.clear();
     ImageManager::instance()->cleanPolygonStencil();
+    ImageManager::instance()->cleanRulerStencil();
     this->setPixmap(ImageManager::instance()->getImageAsQPixmap());
+    Q_EMIT updatePolygonArea_signal(0);
+    Q_EMIT updateRulerDistance_signal(0);
+}
+
+void ImageInterface::mouseMoveEvent(QMouseEvent *ev)
+{
+    Q_EMIT mouseMoved_signal(ev);
 }
 
 void ImageInterface::mousePressEvent(QMouseEvent *ev)
 {
-    if(_isPolygonMode)
+    if(_managementMode == POLYGON_MODE)
     {
         _polygon.append(ev->pos());
 
         if(_polygon.size()>1)
         {
             ImageManager::instance()->cleanPolygonStencil();
-            ImageManager::instance()->drawPolygon(_polygon);
+            Q_EMIT updatePolygonArea_signal(ImageManager::instance()->drawPolygon(_polygon));
             this->setPixmap(ImageManager::instance()->getImageAsQPixmap());
         }
+    }
+    else if(_managementMode == RULER_MODE)
+    {
+        if(_rulerPoints.size() == 0)
+            _rulerPoints.append(ev->pos());
+        else if(_rulerPoints.size() == 1)
+            _rulerPoints.append(ev->pos());
+        else if(_rulerPoints.size() == 2)
+        {
+            _rulerPoints[0] = _rulerPoints[1];
+            _rulerPoints[1] = ev->pos();
+        }
+        ImageManager::instance()->cleanRulerStencil();
+        Q_EMIT updateRulerDistance_signal(ImageManager::instance()->drawRuler(_rulerPoints));
+        this->setPixmap(ImageManager::instance()->getImageAsQPixmap());
     }
 }
 

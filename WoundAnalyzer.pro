@@ -63,4 +63,6 @@ DISTFILES += \
     Ui/Icons/Configure.png \
     Ui/Icons/Help.png \
     Ui/Icons/Clear.png \
-    Ui/Icons/About.png
+    Ui/Icons/About.png \
+    Ui/Icons/Ruler.png \
+    Ui/Icons/Save.png
