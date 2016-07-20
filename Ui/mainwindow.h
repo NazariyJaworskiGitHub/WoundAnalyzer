@@ -7,6 +7,7 @@
 #include <QMessageBox>
 
 #include "Ui/imageinterface.h"
+#include "Ui/settingswidget.h"
 #include "Ui/databaseconnectionwidget.h"
 
 namespace Ui {
@@ -39,6 +40,7 @@ private Q_SLOTS:
     void on_actionClear_triggered();
     void on_actionAbout_triggered();
     void on_actionRuler_toggled(bool arg1);
+    void on_actionSettings_triggered();
 };
 
 #endif // MAINWINDOW_H

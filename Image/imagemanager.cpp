@@ -12,7 +12,12 @@ void ImageManager::cleanRulerStencil()
     //_myPolygonImage = cv::Mat(_myImage.rows, _myImage.cols, CV_8UC1);
 }
 
-int ImageManager::drawPolygon(const QPolygon &polygon)
+int ImageManager::drawPolygon(
+        const QPolygon &polygon,
+        const QColor &pec,
+        const QColor &pc,
+        const QColor &pt,
+        int thickness)
 {
     int _area = 0;
     if(polygon.size() != 0)
@@ -25,15 +30,15 @@ int ImageManager::drawPolygon(const QPolygon &polygon)
             _tmpPoly[i].y = polygon[i].y();
         }
         if(_tmpPoly.size()==1)
-            cv::circle(_myPolygonImage,_tmpPoly[0],1,cv::Scalar(127,127,127));
+            cv::circle(_myPolygonImage,_tmpPoly[0],thickness,cv::Scalar(pec.blue(),pec.green(),pec.red()));
         else if(_tmpPoly.size()==2)
-            cv::polylines(_myPolygonImage, _tmpPoly, false, cv::Scalar(255,255,255));
+            cv::polylines(_myPolygonImage, _tmpPoly, false, cv::Scalar(pec.blue(),pec.green(),pec.red()),thickness);
         else
         {
             std::vector<std::vector<cv::Point>> _p(1);
             _p[0] = _tmpPoly;
-            cv::fillPoly(_myPolygonImage,_p,cv::Scalar(127,127,127));
-            cv::polylines(_myPolygonImage, _tmpPoly, true, cv::Scalar(255,255,255));
+            cv::fillPoly(_myPolygonImage,_p,cv::Scalar(pc.blue(),pc.green(),pc.red()));
+            cv::polylines(_myPolygonImage, _tmpPoly, true, cv::Scalar(pec.blue(),pec.green(),pec.red()),thickness);
             _area = cv::contourArea(_tmpPoly); // TEST IT it uses Green formula and returns double!
             cv::putText(
                         _myPolygonImage,
@@ -41,30 +46,35 @@ int ImageManager::drawPolygon(const QPolygon &polygon)
                          _tmpPoly[0],
                         cv::FONT_HERSHEY_PLAIN,
                         1.0,
-                        cv::Scalar(127,255,127));
+                        cv::Scalar(pt.blue(),pt.green(),pt.red()));
         }
         _tmpPoly.clear();
     }
     return _area;
 }
 
-double ImageManager::drawRuler(const QPolygon &ruler)
+double ImageManager::drawRuler(
+        const QPolygon &ruler,
+        const QColor &rec,
+        const QColor &rc,
+        const QColor &rt,
+        int thickness)
 {
     double _distance = 0;
     if(ruler.size() != 0)
     {
-        cv::circle(_myRulerImage,cv::Point(ruler[0].x(),ruler[0].y()),1,cv::Scalar(255,255,255));
-        cv::circle(_myRulerImage,cv::Point(ruler[0].x(),ruler[0].y()),3,cv::Scalar(0,0,255),2);
+//        cv::circle(_myRulerImage,cv::Point(ruler[0].x(),ruler[0].y()),1,cv::Scalar(255,255,255));
+        cv::circle(_myRulerImage,cv::Point(ruler[0].x(),ruler[0].y()),3,cv::Scalar(rc.blue(),rc.green(),rc.red()),2);
         if(ruler.size()==2)
         {
             cv::line(
                     _myRulerImage,
                     cv::Point(ruler[0].x(),ruler[0].y()),
                     cv::Point(ruler[1].x(),ruler[1].y()),
-                    cv::Scalar(255,0,0),
-                    1);
-            cv::circle(_myRulerImage,cv::Point(ruler[1].x(),ruler[1].y()),1,cv::Scalar(255,255,255));
-            cv::circle(_myRulerImage,cv::Point(ruler[1].x(),ruler[1].y()),3,cv::Scalar(0,0,255),2);
+                    cv::Scalar(rec.blue(),rec.green(),rec.red()),
+                    thickness);
+//            cv::circle(_myRulerImage,cv::Point(ruler[1].x(),ruler[1].y()),1,cv::Scalar(255,255,255));
+            cv::circle(_myRulerImage,cv::Point(ruler[1].x(),ruler[1].y()),3,cv::Scalar(rc.blue(),rc.green(),rc.red()),2);
             _distance = std::sqrt((ruler[0].x()-ruler[1].x())*(ruler[0].x()-ruler[1].x()) +
                     (ruler[0].y()-ruler[1].y())*(ruler[0].y()-ruler[1].y()));
 
@@ -76,16 +86,16 @@ double ImageManager::drawRuler(const QPolygon &ruler)
                             ruler[0].y() + (ruler[1].y() - ruler[0].y())/2.0),
                         cv::FONT_HERSHEY_PLAIN,
                         1.0,
-                        cv::Scalar(0,255,255));
+                        cv::Scalar(rt.blue(),rt.green(),rt.red()));
         }
     }
     return _distance;
 }
 
-const QPixmap ImageManager::getImageAsQPixmap() const
+const QPixmap ImageManager::getImageAsQPixmap(int transparency) const
 {
     cv::Mat _result;
-    cv::addWeighted(_myImage, 0.5, _myPolygonImage, 0.5, 0.0, _result);
+    cv::addWeighted(_myImage, 1.0 - transparency/100.0, _myPolygonImage, transparency/100.0, 0.0, _result);
     cv::add(_result, _myRulerImage, _result);
     return QPixmap::fromImage(Mat2QImage(_result));
 }

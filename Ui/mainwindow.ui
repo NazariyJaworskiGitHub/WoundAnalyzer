@@ -90,6 +90,7 @@
      <string>Database</string>
     </property>
     <addaction name="actionConnect"/>
+    <addaction name="actionRecord"/>
    </widget>
    <widget class="QMenu" name="menuImage">
     <property name="title">
@@ -101,6 +102,8 @@
     <addaction name="actionPolygon"/>
     <addaction name="actionRuler"/>
     <addaction name="actionClear"/>
+    <addaction name="separator"/>
+    <addaction name="actionSettings"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -125,6 +128,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionConnect"/>
+   <addaction name="actionRecord"/>
    <addaction name="separator"/>
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
@@ -132,6 +136,8 @@
    <addaction name="actionPolygon"/>
    <addaction name="actionRuler"/>
    <addaction name="actionClear"/>
+   <addaction name="separator"/>
+   <addaction name="actionSettings"/>
    <addaction name="separator"/>
    <addaction name="actionContext"/>
   </widget>
@@ -232,6 +238,33 @@
    </property>
    <property name="text">
     <string>Save...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset>
+     <normaloff>Icons/Configure.png</normaloff>Icons/Configure.png</iconset>
+   </property>
+   <property name="text">
+    <string>Settings</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actionRecord">
+   <property name="icon">
+    <iconset>
+     <normaloff>Icons/Edit.png</normaloff>Icons/Edit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Record</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
    </property>
   </action>
  </widget>

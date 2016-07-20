@@ -123,3 +123,9 @@ void MainWindow::on_actionAbout_triggered()
     msgBox.setIcon(QMessageBox::Information);
     msgBox.exec();
 }
+
+void MainWindow::on_actionSettings_triggered()
+{
+    SettingsWidget *_sw = new SettingsWidget(ui->label, this);
+    _sw->exec();
+}

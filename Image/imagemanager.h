@@ -8,6 +8,7 @@
 #include <opencv2/opencv.hpp>
 
 /// Manages image
+/// \todo move it all to ImageInterface
 class ImageManager : public QObject
 {
     Q_OBJECT
@@ -17,10 +18,20 @@ class ImageManager : public QObject
     private: cv::Mat _myRulerImage;
     public : void cleanPolygonStencil();
     public : void cleanRulerStencil();
-    public : int drawPolygon(const QPolygon &polygon); // returns the area of polygon
-    public : double drawRuler(const QPolygon &ruler); // returns the area of polygon
+    public : int drawPolygon(
+            const QPolygon &polygon,
+            const QColor &pec,
+            const QColor &pc,
+            const QColor &pt,
+            int thickness); // returns the area of polygon
+    public : double drawRuler(
+            const QPolygon &ruler,
+            const QColor &rec,
+            const QColor &rc,
+            const QColor &rt,
+            int thickness); // returns the area of polygon
     public : const cv::Mat & getImage() const {return _myImage;}
-    public : const QPixmap getImageAsQPixmap() const;
+    public : const QPixmap getImageAsQPixmap(int transparency = 50) const;
 
     private: ImageManager(QObject *parent = nullptr);
 

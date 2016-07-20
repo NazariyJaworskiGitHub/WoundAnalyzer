@@ -18,11 +18,28 @@ void ImageInterface::clearStuff()
 {
     _polygon.clear();
     _rulerPoints.clear();
-    ImageManager::instance()->cleanPolygonStencil();
-    ImageManager::instance()->cleanRulerStencil();
-    this->setPixmap(ImageManager::instance()->getImageAsQPixmap());
+    drawStuff();
     Q_EMIT updatePolygonArea_signal(0);
     Q_EMIT updateRulerDistance_signal(0);
+}
+
+void ImageInterface::drawStuff()
+{
+    ImageManager::instance()->cleanPolygonStencil();
+    ImageManager::instance()->cleanRulerStencil();
+    Q_EMIT updatePolygonArea_signal(ImageManager::instance()->drawPolygon(
+                                        _polygon,
+                                        polygonEdgeColor,
+                                        polygonColor,
+                                        polygonTextColor,
+                                        polygonEdgeThickness));
+    Q_EMIT updateRulerDistance_signal(ImageManager::instance()->drawRuler(
+                                          _rulerPoints,
+                                          rulerColor,
+                                          rulerNodesColor,
+                                          rulerTextColor,
+                                          rulerThickness));
+    this->setPixmap(ImageManager::instance()->getImageAsQPixmap(transparency));
 }
 
 void ImageInterface::mouseMoveEvent(QMouseEvent *ev)
@@ -35,13 +52,7 @@ void ImageInterface::mousePressEvent(QMouseEvent *ev)
     if(_managementMode == POLYGON_MODE)
     {
         _polygon.append(ev->pos());
-
-        if(_polygon.size()>1)
-        {
-            ImageManager::instance()->cleanPolygonStencil();
-            Q_EMIT updatePolygonArea_signal(ImageManager::instance()->drawPolygon(_polygon));
-            this->setPixmap(ImageManager::instance()->getImageAsQPixmap());
-        }
+        drawStuff();
     }
     else if(_managementMode == RULER_MODE)
     {
@@ -54,9 +65,7 @@ void ImageInterface::mousePressEvent(QMouseEvent *ev)
             _rulerPoints[0] = _rulerPoints[1];
             _rulerPoints[1] = ev->pos();
         }
-        ImageManager::instance()->cleanRulerStencil();
-        Q_EMIT updateRulerDistance_signal(ImageManager::instance()->drawRuler(_rulerPoints));
-        this->setPixmap(ImageManager::instance()->getImageAsQPixmap());
+        drawStuff();
     }
 }
 
