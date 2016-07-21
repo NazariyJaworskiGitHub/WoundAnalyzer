@@ -18,18 +18,18 @@ class ImageManager : public QObject
     private: cv::Mat _myRulerImage;
     public : void cleanPolygonStencil();
     public : void cleanRulerStencil();
-    public : int drawPolygon(
+    public : int drawPolygon( // returns the area of polygon
             const QPolygon &polygon,
-            const QColor &pec,
-            const QColor &pc,
-            const QColor &pt,
-            int thickness); // returns the area of polygon
-    public : double drawRuler(
+            const QColor &pec = QColor(255, 255, 255),
+            const QColor &pc = QColor(127, 127, 127),
+            const QColor &pt = QColor(127, 255, 127),
+            int thickness = 1); // note that node has radius thickness + 2
+    public : double drawRuler( // returns the area of polygon
             const QPolygon &ruler,
-            const QColor &rec,
-            const QColor &rc,
-            const QColor &rt,
-            int thickness); // returns the area of polygon
+            const QColor &rec = QColor(255,   0,   0),
+            const QColor &rc = QColor(  0,   0, 255),
+            const QColor &rt = QColor(  0, 255, 255),
+            int thickness = 3); // note that node has radius thickness + 2
     public : const cv::Mat & getImage() const {return _myImage;}
     public : const QPixmap getImageAsQPixmap(int transparency = 50) const;
 

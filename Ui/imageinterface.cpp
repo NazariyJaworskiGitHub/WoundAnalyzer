@@ -44,6 +44,15 @@ void ImageInterface::drawStuff()
 
 void ImageInterface::mouseMoveEvent(QMouseEvent *ev)
 {
+    if(_managementMode == COMMON_MODE)
+    {
+        if(_nodeToMove) // move nodes
+        {
+            _nodeToMove->setX(ev->x());
+            _nodeToMove->setY(ev->y());
+            drawStuff();
+        }
+    }
     Q_EMIT mouseMoved_signal(ev);
 }
 
@@ -66,6 +75,34 @@ void ImageInterface::mousePressEvent(QMouseEvent *ev)
             _rulerPoints[1] = ev->pos();
         }
         drawStuff();
+    }
+    else if(_managementMode == COMMON_MODE) // move nodes
+    {
+        for(QPoint *n = _polygon.begin(); n!= _polygon.end(); ++n)
+            if(std::sqrt( // note that node has radius thickness + 2
+                        (n->x()-ev->x())*(n->x()-ev->x()) +
+                        (n->y()-ev->y())*(n->y()-ev->y())) < polygonEdgeThickness+3)
+            {
+                _nodeToMove = n;
+                break;
+            }
+        if(!_nodeToMove)
+            for(QPoint *n = _rulerPoints.begin(); n!= _rulerPoints.end(); ++n)
+                if(std::sqrt( // note that node has radius thickness + 2
+                            (n->x()-ev->x())*(n->x()-ev->x()) +
+                            (n->y()-ev->y())*(n->y()-ev->y())) < rulerThickness+3)
+                {
+                    _nodeToMove = n;
+                    break;
+                }
+    }
+}
+
+void ImageInterface::mouseReleaseEvent(QMouseEvent *ev)
+{
+    if(_managementMode == COMMON_MODE) // move nodes
+    {
+        _nodeToMove = nullptr;
     }
 }
 

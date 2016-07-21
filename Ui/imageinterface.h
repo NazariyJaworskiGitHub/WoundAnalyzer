@@ -35,7 +35,7 @@ class ImageInterface : public QLabel
     public : QColor rulerColor              = QColor(255,   0,   0);
     public : QColor rulerNodesColor         = QColor(  0,   0, 255);
     public : QColor rulerTextColor          = QColor(  0, 255, 255);
-    public : int    rulerThickness          = 3;
+    public : int    rulerThickness          = 1;
     public : int    transparency            = 50;
     private: QPolygon _polygon;
     private: QPolygon _rulerPoints;
@@ -43,9 +43,12 @@ class ImageInterface : public QLabel
     public : void clearStuff();
     public : void drawStuff();
 
+    private: QPoint *_nodeToMove = nullptr;
+
     public : void mouseMoveEvent(QMouseEvent *ev) override;
     public : Q_SIGNAL void mouseMoved_signal(QMouseEvent *ev);          // see MainWindow
     public : void mousePressEvent(QMouseEvent *ev) override;
+    public : void mouseReleaseEvent(QMouseEvent *ev) override;
     public : Q_SIGNAL void updatePolygonArea_signal(int area);          // see MainWindow
     public : Q_SIGNAL void updateRulerDistance_signal(double distance); // see MainWindow
 

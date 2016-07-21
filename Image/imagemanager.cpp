@@ -28,12 +28,11 @@ int ImageManager::drawPolygon(
         {
             _tmpPoly[i].x = polygon[i].x();
             _tmpPoly[i].y = polygon[i].y();
+            cv::circle(_myPolygonImage,_tmpPoly[i],thickness+2,cv::Scalar(pec.blue(),pec.green(),pec.red()));
         }
-        if(_tmpPoly.size()==1)
-            cv::circle(_myPolygonImage,_tmpPoly[0],thickness,cv::Scalar(pec.blue(),pec.green(),pec.red()));
-        else if(_tmpPoly.size()==2)
+        if(_tmpPoly.size() == 2)
             cv::polylines(_myPolygonImage, _tmpPoly, false, cv::Scalar(pec.blue(),pec.green(),pec.red()),thickness);
-        else
+        else if(_tmpPoly.size() > 2)
         {
             std::vector<std::vector<cv::Point>> _p(1);
             _p[0] = _tmpPoly;
@@ -63,8 +62,7 @@ double ImageManager::drawRuler(
     double _distance = 0;
     if(ruler.size() != 0)
     {
-//        cv::circle(_myRulerImage,cv::Point(ruler[0].x(),ruler[0].y()),1,cv::Scalar(255,255,255));
-        cv::circle(_myRulerImage,cv::Point(ruler[0].x(),ruler[0].y()),3,cv::Scalar(rc.blue(),rc.green(),rc.red()),2);
+        cv::circle(_myRulerImage,cv::Point(ruler[0].x(),ruler[0].y()),thickness+2,cv::Scalar(rc.blue(),rc.green(),rc.red()),1);
         if(ruler.size()==2)
         {
             cv::line(
@@ -73,8 +71,7 @@ double ImageManager::drawRuler(
                     cv::Point(ruler[1].x(),ruler[1].y()),
                     cv::Scalar(rec.blue(),rec.green(),rec.red()),
                     thickness);
-//            cv::circle(_myRulerImage,cv::Point(ruler[1].x(),ruler[1].y()),1,cv::Scalar(255,255,255));
-            cv::circle(_myRulerImage,cv::Point(ruler[1].x(),ruler[1].y()),3,cv::Scalar(rc.blue(),rc.green(),rc.red()),2);
+            cv::circle(_myRulerImage,cv::Point(ruler[1].x(),ruler[1].y()),thickness+2,cv::Scalar(rc.blue(),rc.green(),rc.red()),1);
             _distance = std::sqrt((ruler[0].x()-ruler[1].x())*(ruler[0].x()-ruler[1].x()) +
                     (ruler[0].y()-ruler[1].y())*(ruler[0].y()-ruler[1].y()));
 
