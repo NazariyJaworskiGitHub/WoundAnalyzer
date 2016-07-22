@@ -21,6 +21,7 @@ void ImageInterface::clearStuff()
     drawStuff();
     Q_EMIT updatePolygonArea_signal(0);
     Q_EMIT updateRulerDistance_signal(0);
+    Q_EMIT cleanPolygonNodes_signal();
 }
 
 void ImageInterface::drawStuff()
@@ -48,6 +49,7 @@ void ImageInterface::mouseMoveEvent(QMouseEvent *ev)
     {
         if(_nodeToMove) // move nodes
         {
+            Q_EMIT updateNode_signal(*_nodeToMove,QPoint(ev->x(),ev->y()));
             _nodeToMove->setX(ev->x());
             _nodeToMove->setY(ev->y());
             drawStuff();
@@ -61,6 +63,7 @@ void ImageInterface::mousePressEvent(QMouseEvent *ev)
     if(_managementMode == POLYGON_MODE)
     {
         _polygon.append(ev->pos());
+        Q_EMIT createNewNode_signal(_polygon.last());
         drawStuff();
     }
     else if(_managementMode == RULER_MODE)
@@ -78,23 +81,30 @@ void ImageInterface::mousePressEvent(QMouseEvent *ev)
     }
     else if(_managementMode == COMMON_MODE) // move nodes
     {
-        for(QPoint *n = _polygon.begin(); n!= _polygon.end(); ++n)
-            if(std::sqrt( // note that node has radius thickness + 2
-                        (n->x()-ev->x())*(n->x()-ev->x()) +
-                        (n->y()-ev->y())*(n->y()-ev->y())) < polygonEdgeThickness+3)
-            {
-                _nodeToMove = n;
-                break;
-            }
-        if(!_nodeToMove)
-            for(QPoint *n = _rulerPoints.begin(); n!= _rulerPoints.end(); ++n)
+        if(ev->button() == Qt::LeftButton)
+        {
+            for(QPoint *n = _polygon.begin(); n!= _polygon.end(); ++n)
                 if(std::sqrt( // note that node has radius thickness + 2
                             (n->x()-ev->x())*(n->x()-ev->x()) +
-                            (n->y()-ev->y())*(n->y()-ev->y())) < rulerThickness+3)
+                            (n->y()-ev->y())*(n->y()-ev->y())) < polygonEdgeThickness+3)
                 {
                     _nodeToMove = n;
                     break;
                 }
+            if(!_nodeToMove)
+                for(QPoint *n = _rulerPoints.begin(); n!= _rulerPoints.end(); ++n)
+                    if(std::sqrt( // note that node has radius thickness + 2
+                                (n->x()-ev->x())*(n->x()-ev->x()) +
+                                (n->y()-ev->y())*(n->y()-ev->y())) < rulerThickness+3)
+                    {
+                        _nodeToMove = n;
+                        break;
+                    }
+        }
+        else if(ev->button() == Qt::RightButton)
+        {
+            /// \todo
+        }
     }
 }
 
@@ -120,5 +130,16 @@ void ImageInterface::dropEvent(QDropEvent *ev)
 ImageInterface::~ImageInterface()
 {
     _polygon.clear();
+}
+
+void ImageInterface::deletePolygonNode(QPoint node)
+{
+    for(QPolygon::Iterator n = _polygon.begin(); n!= _polygon.end(); ++n)
+        if(n->x() == node.x() && n->y() == node.y())
+        {
+            _polygon.erase(n);
+            break;
+        }
+    drawStuff();
 }
 

@@ -105,9 +105,17 @@ ImageManager::ImageManager(QObject *parent):
 
 void ImageManager::openImage(QString fileName)
 {
-    _myImage = cv::imread(fileName.toStdString(), cv::IMREAD_COLOR);
+    _myImage = cv::imread(fileName.toLocal8Bit().constData(), cv::IMREAD_COLOR);
     cleanPolygonStencil();
     cleanRulerStencil();
+}
+
+void ImageManager::saveImage(QString fileName, int transparency) const
+{
+    cv::Mat _result;
+    cv::addWeighted(_myImage, 1.0 - transparency/100.0, _myPolygonImage, transparency/100.0, 0.0, _result);
+    cv::add(_result, _myRulerImage, _result);
+    cv::imwrite(fileName.toLocal8Bit().constData(),_result);
 }
 
 QImage ImageManager::Mat2QImage(cv::Mat const& src)

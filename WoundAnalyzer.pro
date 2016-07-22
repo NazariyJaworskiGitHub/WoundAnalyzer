@@ -51,7 +51,8 @@ HEADERS  += Ui/mainwindow.h \
     Ui/databaseconnectioneditsubitemwidget.h \
     Image/imagemanager.h \
     Ui/imageinterface.h \
-    Ui/settingswidget.h
+    Ui/settingswidget.h \
+    Ui/nodesubitemwidget.h
 
 FORMS    += Ui/mainwindow.ui \
     Ui/databaseconnectionwidget.ui \

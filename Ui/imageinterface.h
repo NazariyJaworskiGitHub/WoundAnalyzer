@@ -18,7 +18,7 @@ class ImageInterface : public QLabel
     public : explicit ImageInterface(QWidget *parent = nullptr);
 
     public : void openImage(QString fileName);
-    public : Q_SIGNAL void updateFilename_signal(QString fileName);     // see MainWindow
+    public : Q_SIGNAL void updateFilename_signal(QString fileName);
 
     public : enum ManagementMode{POLYGON_MODE, RULER_MODE, COMMON_MODE};
     private: ManagementMode _managementMode;
@@ -26,7 +26,7 @@ class ImageInterface : public QLabel
     public : void setManagementMode(ManagementMode mode) {
         _managementMode = mode; Q_EMIT updateManagementMode_signal(mode);}
     public : Q_SIGNAL void updateManagementMode_signal(
-            ImageInterface::ManagementMode mode);                       // see MainWindow
+            ImageInterface::ManagementMode mode);
 
     public : QColor polygonEdgeColor        = QColor(255, 255, 255);
     public : QColor polygonColor            = QColor(127, 127, 127);
@@ -46,16 +46,21 @@ class ImageInterface : public QLabel
     private: QPoint *_nodeToMove = nullptr;
 
     public : void mouseMoveEvent(QMouseEvent *ev) override;
-    public : Q_SIGNAL void mouseMoved_signal(QMouseEvent *ev);          // see MainWindow
+    public : Q_SIGNAL void mouseMoved_signal(QMouseEvent *ev);
     public : void mousePressEvent(QMouseEvent *ev) override;
+    public : Q_SIGNAL void createNewNode_signal(QPoint node);
+    public : Q_SIGNAL void updateNode_signal(QPoint node, QPoint newVal);
+    public : Q_SIGNAL void cleanPolygonNodes_signal();
     public : void mouseReleaseEvent(QMouseEvent *ev) override;
-    public : Q_SIGNAL void updatePolygonArea_signal(int area);          // see MainWindow
-    public : Q_SIGNAL void updateRulerDistance_signal(double distance); // see MainWindow
+    public : Q_SIGNAL void updatePolygonArea_signal(int area);
+    public : Q_SIGNAL void updateRulerDistance_signal(double distance);
 
     public : void dragEnterEvent(QDragEnterEvent *ev) override;
     public : void dropEvent(QDropEvent *ev) override;
 
     public : ~ImageInterface();
+
+    public : void deletePolygonNode(QPoint node);
 };
 
 #endif // IMAGEINTERFACE_H

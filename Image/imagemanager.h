@@ -36,6 +36,7 @@ class ImageManager : public QObject
     private: ImageManager(QObject *parent = nullptr);
 
     public : void openImage(QString fileName);
+    public : void saveImage(QString fileName,int transparency = 50) const;
     public : static QImage Mat2QImage(cv::Mat const& src);
 
     private: ~ImageManager();
