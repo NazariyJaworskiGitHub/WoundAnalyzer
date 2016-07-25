@@ -52,7 +52,7 @@ HEADERS  += Ui/mainwindow.h \
     Image/imagemanager.h \
     Ui/imageinterface.h \
     Ui/settingswidget.h \
-    Ui/nodesubitemwidget.h
+    Utilities/mathutilities.h
 
 FORMS    += Ui/mainwindow.ui \
     Ui/databaseconnectionwidget.ui \

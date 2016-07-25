@@ -7,38 +7,57 @@
 #include <QPolygon>
 #include <opencv2/opencv.hpp>
 
+
 /// Manages image
 /// \todo move it all to ImageInterface
 class ImageManager : public QObject
 {
     Q_OBJECT
 
+    public : bool isImageOpened = false;
+
     private: cv::Mat _myImage;
-    private: cv::Mat _myPolygonImage;
-    private: cv::Mat _myRulerImage;
-    public : void cleanPolygonStencil();
-    public : void cleanRulerStencil();
+    private: cv::Mat _myDrawingLayer;
+
+    public : double drawingLayerTransparency = 0.75;
+
+    public : void cleanDrawingLayer();
+
+    public : void highlightCircle(
+            const QPoint &p,
+            const QColor &col,
+            int radius); // note that node has radius thickness + 4
+
+    public : void highlightLine(
+            const QPoint &a,
+            const QPoint &b,
+            const QColor &col,
+            int thickness); // note that line has thickness thickness + 2
+
     public : int drawPolygon( // returns the area of polygon
             const QPolygon &polygon,
-            const QColor &pec = QColor(255, 255, 255),
-            const QColor &pc = QColor(127, 127, 127),
-            const QColor &pt = QColor(127, 255, 127),
-            int thickness = 1); // note that node has radius thickness + 2
-    public : double drawRuler( // returns the area of polygon
-            const QPolygon &ruler,
-            const QColor &rec = QColor(255,   0,   0),
-            const QColor &rc = QColor(  0,   0, 255),
-            const QColor &rt = QColor(  0, 255, 255),
-            int thickness = 3); // note that node has radius thickness + 2
-    public : const cv::Mat & getImage() const {return _myImage;}
-    public : const QPixmap getImageAsQPixmap(int transparency = 50) const;
+            const QColor &pec,
+            const QColor &pc,
+            const QColor &pt,
+            int thickness); // note that node has radius thickness + 2
 
-    private: ImageManager(QObject *parent = nullptr);
+    public : double drawRuler( // returns the length of the ruler
+            const QPolygon &ruler,
+            const QColor &rec,
+            const QColor &rc,
+            const QColor &rt,
+            int thickness); // note that node has radius thickness + 2
+
+    private: cv::Mat _blendLayers() const;
+
+    public : const QPixmap getImageAsQPixmap() const;
 
     public : void openImage(QString fileName);
-    public : void saveImage(QString fileName,int transparency = 50) const;
+    public : void saveImage(QString fileName) const;
+
     public : static QImage Mat2QImage(cv::Mat const& src);
 
+    private: ImageManager(QObject *parent = nullptr);
     private: ~ImageManager();
 
     public : static ImageManager *instance();

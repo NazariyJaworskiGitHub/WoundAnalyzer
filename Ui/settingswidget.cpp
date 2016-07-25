@@ -22,7 +22,7 @@ SettingsWidget::SettingsWidget(ImageInterface* ptr, QWidget *parent) :
     ui->rulerTextColor->setStyleSheet("background-color: " +
                                        _ptr->rulerTextColor.name());
     ui->rulerThickness->setValue(_ptr->rulerThickness);
-    ui->horizontalSlider->setValue(_ptr->transparency);
+    ui->horizontalSlider->setValue(ImageManager::instance()->drawingLayerTransparency*100);
 }
 
 SettingsWidget::~SettingsWidget()
@@ -40,7 +40,7 @@ void SettingsWidget::_colorUpdate(QColor &_refToParentColor, QPushButton *_refTo
     {
         _refToParentColor = _color;
         _refToWidgetButton->setStyleSheet("background-color: " + _color.name());
-        _ptr->drawStuff();
+        _ptr->drawAll();
     }
 }
 
@@ -67,13 +67,13 @@ void SettingsWidget::on_rulerNodesColor_clicked()
 void SettingsWidget::on_polygonEdgeThickness_valueChanged(int arg1)
 {
     _ptr->polygonEdgeThickness = arg1;
-    _ptr->drawStuff();
+    _ptr->drawAll();
 }
 
 void SettingsWidget::on_rulerThickness_valueChanged(int arg1)
 {
     _ptr->rulerThickness = arg1;
-    _ptr->drawStuff();
+    _ptr->drawAll();
 }
 
 void SettingsWidget::on_polygonTextColor_clicked()
@@ -88,6 +88,6 @@ void SettingsWidget::on_rulerTextColor_clicked()
 
 void SettingsWidget::on_horizontalSlider_valueChanged(int value)
 {
-    _ptr->transparency = value;
-    _ptr->drawStuff();
+    ImageManager::instance()->drawingLayerTransparency = value/100.0;
+    _ptr->drawAll();
 }
