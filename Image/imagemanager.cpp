@@ -3,9 +3,10 @@
 void ImageManager::cleanDrawingLayer()
 {
     _myDrawingLayer = cv::Mat(_myImage.rows, _myImage.cols, _myImage.type());
+    cv::resize(_myDrawingLayer,_myDrawingLayer,cv::Size(),zoomFactor,zoomFactor);
 }
 
-void ImageManager::highlightCircle(const QPoint &p, const QColor &col, int radius)
+void ImageManager::highlightCircle(const QPointF &p, const QColor &col, int radius)
 {
     cv::circle(
                 _myDrawingLayer,
@@ -16,7 +17,7 @@ void ImageManager::highlightCircle(const QPoint &p, const QColor &col, int radiu
 }
 
 void ImageManager::highlightLine(
-        const QPoint &a, const QPoint &b, const QColor &col, int thickness)
+        const QPointF &a, const QPointF &b, const QColor &col, int thickness)
 {
     cv::line(
             _myDrawingLayer,
@@ -26,14 +27,14 @@ void ImageManager::highlightLine(
             thickness+2);
 }
 
-int ImageManager::drawPolygon(
-        const QPolygon &polygon,
+double ImageManager::drawPolygon(
+        const QPolygonF &polygon,
         const QColor &pec,
         const QColor &pc,
         const QColor &pt,
         int thickness)
 {
-    int _area = 0;
+    double _area = 0;
     if(polygon.size() != 0)
     {
         std::vector<cv::Point> _tmpPoly;
@@ -69,7 +70,12 @@ int ImageManager::drawPolygon(
                         true,
                         cv::Scalar(pec.blue(),pec.green(),pec.red()),
                         thickness);
-            _area = cv::contourArea(_tmpPoly); /// \todo TEST IT
+            /// \todo TEST IT
+            if(rulerLength != 0)
+                _area = cv::contourArea(_tmpPoly) *
+                        (rulerFactor / rulerLength) *
+                        (rulerFactor / rulerLength);
+            else _area = cv::contourArea(_tmpPoly);
             cv::putText(
                         _myDrawingLayer,
                         QString::number(_area).toStdString(),
@@ -84,7 +90,7 @@ int ImageManager::drawPolygon(
 }
 
 double ImageManager::drawRuler(
-        const QPolygon &ruler,
+        const QPolygonF &ruler,
         const QColor &rec,
         const QColor &rc,
         const QColor &rt,
@@ -116,7 +122,7 @@ double ImageManager::drawRuler(
 
             cv::putText(
                         _myDrawingLayer,
-                        QString::number(_distance).toStdString(),
+                        QString::number(_distance).toStdString() + "px",
                         cv::Point(
                             ruler[0].x() + (ruler[1].x() - ruler[0].x())/2.0,
                             ruler[0].y() + (ruler[1].y() - ruler[0].y())/2.0),
@@ -125,19 +131,28 @@ double ImageManager::drawRuler(
                         cv::Scalar(rt.blue(),rt.green(),rt.red()));
         }
     }
+    rulerLength = _distance;
     return _distance;
 }
 
 cv::Mat ImageManager::_blendLayers() const
 {
     cv::Mat _result;
+
+    cv::resize(_myImage,_result,cv::Size(),zoomFactor,zoomFactor);
+
+//    cv::Mat _mask = _result & _myDrawingLayer;
+//    cv::Mat _binaryMask;
+//    cv::threshold(_mask,_binaryMask,1,256,cv::THRESH_BINARY);
+
     cv::addWeighted(
-                _myImage,
+                _result,
                 1.0 - drawingLayerTransparency,
                 _myDrawingLayer,
                 drawingLayerTransparency,
                 0.0,
                 _result);
+
     return _result;
 }
 
@@ -153,6 +168,9 @@ void ImageManager::openImage(QString fileName)
     {
         cleanDrawingLayer();
         isImageOpened = true;
+        zoomFactor = 1.0;
+        rulerFactor = 1.0;
+        rulerLength = 0;
     }
 }
 

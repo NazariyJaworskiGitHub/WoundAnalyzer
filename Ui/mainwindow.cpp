@@ -7,12 +7,17 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    this->setCentralWidget(ui->imageHolderScrollArea);
+    this->setCentralWidget(ui->centralWidget);
+
+    ui->imageZoomFactorLabel->setText(
+                QString::number(ImageManager::instance()->zoomFactor * 100) + "%");
+    ui->imageTransparencyLabel->setText(
+                QString::number(ImageManager::instance()->drawingLayerTransparency*100) + "%");
 
     _mousePosition = new QLabel("0,0",this);
     _managementMode = new QLabel("Edit mode, LMB to drag nodes, RMB to delete polygon nodes or split edges",this);
-    _polygonArea = new QLabel("Total wound area = 0 sq pix",this);
-    _rulerDistance = new QLabel("Ruler lengt = 0 pix",this);
+    _polygonArea = new QLabel("Total wound area = 0",this);
+    _rulerDistance = new QLabel("Ruler lengt = 0px",this);
 
     ui->statusBar->addWidget(_mousePosition);
     ui->statusBar->addWidget(_managementMode);
@@ -22,8 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->image,SIGNAL(mouseMoved_signal(QMouseEvent*)),
         this, SLOT(updateMousePositionStatus(QMouseEvent*)));
 
-    connect(ui->image,SIGNAL(updateFilename_signal(QString)),
-        this, SLOT(updateImageFileName(QString)));
+    connect(ui->image,SIGNAL(updateFilenameAndResetZoom_signal(QString)),
+        this, SLOT(updateImageFileNameAndResetZoom(QString)));
 
     connect(ui->image,SIGNAL(updateManagementMode_signal(ImageInterface::ManagementMode)),
         this, SLOT(updateManagementModeStatus(ImageInterface::ManagementMode)));
@@ -34,6 +39,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->image,SIGNAL(updateRulerDistance_signal(double)),
         this, SLOT(updateRulerDistance(double)));
 
+    blockInterface(true);
+
+    ui->actionConnect->setDisabled(true);
+    ui->actionRecord->setDisabled(true);
+    ui->actionContext->setDisabled(true);
 //    DatabaseConnectionWidget *_DBConnectionForm = new DatabaseConnectionWidget(this);
 //    _DBConnectionForm->exec();
 }
@@ -60,17 +70,40 @@ void MainWindow::updateManagementModeStatus(ImageInterface::ManagementMode mode)
 
 void MainWindow::updatePolygonArea(double area)
 {
-    _polygonArea->setText("Total wound area = " + QString::number(area) + " sq pix");
+    _polygonArea->setText("Total wound area = " + QString::number(area));
 }
 
 void MainWindow::updateRulerDistance(double distance)
 {
-    _rulerDistance->setText("Ruler distance = " + QString::number(distance) + " pix");
+    _rulerDistance->setText("Ruler distance = " + QString::number(distance) + "px");
 }
 
-void MainWindow::updateImageFileName(QString fileName)
+void MainWindow::updateImageFileNameAndResetZoom(QString fileName)
 {
     this->setWindowTitle("WoundAnalyzer: " + fileName);
+    ui->imageZoomFactorLabel->setText(
+                QString::number(ImageManager::instance()->zoomFactor * 100) + "%");
+    ui->zoomSlider->blockSignals(true);
+    ui->zoomSlider->setValue(ImageManager::instance()->zoomFactor * 100);
+    ui->zoomSlider->blockSignals(false);
+}
+
+void MainWindow::blockInterface(bool b)
+{
+    ui->actionPolygon->setDisabled(b);
+    ui->actionRuler->setDisabled(b);
+    ui->actionClear->setDisabled(b);
+    ui->actionSave->setDisabled(b);
+    ui->actionSettings->setDisabled(b);
+    ui->actionZoom_In->setDisabled(b);
+    ui->actionZoom_Out->setDisabled(b);
+    ui->zoomSlider->setDisabled(b);
+    ui->imageZoomFactorLabel->setDisabled(b);
+    ui->imageZoomFactorIcon->setDisabled(b);
+    ui->rulerFactorDoubleSpinBox->setDisabled(b);
+    ui->RulerFactorLabel->setDisabled(b);
+    ui->transparencySlider->setDisabled(b);
+    ui->imageTransparencyLabel->setDisabled(b);
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -80,7 +113,11 @@ void MainWindow::on_actionOpen_triggered()
                 tr("Open wound image"),
                 tr(""),
                 tr("Image Files (*.bmp *.jpg *.jpeg *.png *.tif *.tiff)"));
-    ui->image->openImage(_fileName);
+    if(_fileName.size())
+    {
+        ui->image->openImage(_fileName);
+        blockInterface(false);
+    }
 }
 
 void MainWindow::on_actionPolygon_toggled(bool arg1)
@@ -136,4 +173,51 @@ void MainWindow::on_actionSave_triggered()
                 tr(""),
                 tr("Image Files (*.bmp *.jpg *.jpeg *.png *.tif *.tiff)"));
     ImageManager::instance()->saveImage(_fileName);
+}
+
+void MainWindow::on_actionZoom_In_triggered()
+{
+    if(ImageManager::instance()->zoomFactor < 3.9999)
+    {
+        ui->image->zoom(0.1);
+        ui->imageZoomFactorLabel->setText(
+                    QString::number(ImageManager::instance()->zoomFactor * 100) + "%");
+        ui->zoomSlider->blockSignals(true);
+        ui->zoomSlider->setValue(ImageManager::instance()->zoomFactor * 100);
+        ui->zoomSlider->blockSignals(false);
+    }
+}
+
+void MainWindow::on_actionZoom_Out_triggered()
+{
+    if(ImageManager::instance()->zoomFactor > 0.5001)
+    {
+        ui->image->zoom(-0.1);
+        ui->imageZoomFactorLabel->setText(
+                    QString::number(ImageManager::instance()->zoomFactor * 100) + "%");
+        ui->zoomSlider->blockSignals(true);
+        ui->zoomSlider->setValue(ImageManager::instance()->zoomFactor * 100);
+        ui->zoomSlider->blockSignals(false);
+    }
+}
+
+void MainWindow::on_zoomSlider_valueChanged(int value)
+{
+    double delta = value/100.0 - ImageManager::instance()->zoomFactor;
+    ui->image->zoom(delta);
+    ui->imageZoomFactorLabel->setText(
+                QString::number(ImageManager::instance()->zoomFactor * 100) + "%");
+}
+
+void MainWindow::on_rulerFactorDoubleSpinBox_valueChanged(double arg1)
+{
+    ImageManager::instance()->rulerFactor = arg1;
+    ui->image->drawAll();
+}
+
+void MainWindow::on_transparencySlider_valueChanged(int value)
+{
+    ImageManager::instance()->drawingLayerTransparency = value/100.0;
+    ui->imageTransparencyLabel->setText(QString::number(value) + "%");
+    ui->image->drawAll();
 }

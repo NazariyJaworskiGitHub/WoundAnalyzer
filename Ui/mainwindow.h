@@ -34,7 +34,8 @@ private Q_SLOTS:
     void updateManagementModeStatus(ImageInterface::ManagementMode mode);
     void updatePolygonArea(double area);
     void updateRulerDistance(double distance);
-    void updateImageFileName(QString fileName);
+    void updateImageFileNameAndResetZoom(QString fileName);
+    void blockInterface(bool b);
     void on_actionOpen_triggered();
     void on_actionPolygon_toggled(bool arg1);
     void on_actionClear_triggered();
@@ -42,6 +43,11 @@ private Q_SLOTS:
     void on_actionRuler_toggled(bool arg1);
     void on_actionSettings_triggered();
     void on_actionSave_triggered();
+    void on_actionZoom_In_triggered();
+    void on_actionZoom_Out_triggered();
+    void on_zoomSlider_valueChanged(int value);
+    void on_rulerFactorDoubleSpinBox_valueChanged(double arg1);
+    void on_transparencySlider_valueChanged(int value);
 };
 
 #endif // MAINWINDOW_H

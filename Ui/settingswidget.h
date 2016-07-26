@@ -40,8 +40,6 @@ private Q_SLOTS:
 
     void on_rulerTextColor_clicked();
 
-    void on_horizontalSlider_valueChanged(int value);
-
 private:
     Ui::SettingsWidget *ui;
 };

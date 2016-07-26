@@ -7,7 +7,7 @@
 #include <QDropEvent>
 #include <QMimeData>
 #include <QPoint>
-#include <QPolygon>
+#include <QPolygonF>
 
 #include "Image/imagemanager.h"
 
@@ -18,7 +18,7 @@ class ImageInterface : public QLabel
     public : explicit ImageInterface(QWidget *parent = nullptr);
 
     public : void openImage(QString fileName);
-    public : Q_SIGNAL void updateFilename_signal(QString fileName);
+    public : Q_SIGNAL void updateFilenameAndResetZoom_signal(QString fileName);
 
     public : enum ManagementMode{POLYGON_MODE, RULER_MODE, EDIT_MODE};
     private: ManagementMode _managementMode;
@@ -37,29 +37,31 @@ class ImageInterface : public QLabel
     public : QColor rulerTextColor              = QColor(  0, 255, 255);
     public : int    rulerThickness              = 1;
 
-    private: QVector<QPolygon> _polygons;
+    private: QVector<QPolygonF> _polygons;
     public : bool createNewPolygon = true;
-    private: QPolygon _rulerPoints;             /// \todo make it QLine
+    private: QPolygonF _rulerPoints;             /// \todo make it QLine
 
-    private: QPoint *_nodeToMove = nullptr;
+    private: QPointF *_nodeToMove = nullptr;
 
-    private: QPoint *_nodeToHighlight = nullptr;
+    private: QPointF *_nodeToHighlight = nullptr;
     private: bool _isPolygonNodeHighlighted = false;    // or it is ruler node?
-    private: QPoint * _lineToHighlightA = nullptr;
-    private: QPoint * _lineToHighlightB = nullptr;
-    private: QPolygon *_ptrToPolygonWhereNodeIsFound = nullptr;
-    private: QPolygon *_ptrToPolygonWhereLineIsFound = nullptr;
+    private: QPointF * _lineToHighlightA = nullptr;
+    private: QPointF * _lineToHighlightB = nullptr;
+    private: QPolygonF *_ptrToPolygonWhereNodeIsFound = nullptr;
+    private: QPolygonF *_ptrToPolygonWhereLineIsFound = nullptr;
 
-    private: QPoint *_findNodeWithPosInPolygons(const QPoint &pos);
-    private: QPoint *_findNodeWithPosInRuler(const QPoint &pos);
+    private: QPointF *_findNodeWithPosInPolygons(const QPointF &pos);
+    private: QPointF *_findNodeWithPosInRuler(const QPointF &pos);
 
     private: bool _findLineWithPosInPolygons(
-            QPoint **ptrToA,
-            QPoint **ptrToB,
-            const QPoint &pos);
+            QPointF **ptrToA,
+            QPointF **ptrToB,
+            const QPointF &pos);
 
     public : void clearAll();
     public : void drawAll();
+
+    public : void zoom(double delta);
 
     public : void mouseMoveEvent(QMouseEvent *ev) override;
     public : void mousePressEvent(QMouseEvent *ev) override;
@@ -73,8 +75,6 @@ class ImageInterface : public QLabel
     public : void dropEvent(QDropEvent *ev) override;
 
     public : ~ImageInterface();
-
-    public : void deletePolygonNode(QPoint node);
 };
 
 #endif // IMAGEINTERFACE_H

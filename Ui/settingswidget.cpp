@@ -22,7 +22,6 @@ SettingsWidget::SettingsWidget(ImageInterface* ptr, QWidget *parent) :
     ui->rulerTextColor->setStyleSheet("background-color: " +
                                        _ptr->rulerTextColor.name());
     ui->rulerThickness->setValue(_ptr->rulerThickness);
-    ui->horizontalSlider->setValue(ImageManager::instance()->drawingLayerTransparency*100);
 }
 
 SettingsWidget::~SettingsWidget()
@@ -84,10 +83,4 @@ void SettingsWidget::on_polygonTextColor_clicked()
 void SettingsWidget::on_rulerTextColor_clicked()
 {
     _colorUpdate(_ptr->rulerTextColor, ui->rulerTextColor);
-}
-
-void SettingsWidget::on_horizontalSlider_valueChanged(int value)
-{
-    ImageManager::instance()->drawingLayerTransparency = value/100.0;
-    _ptr->drawAll();
 }

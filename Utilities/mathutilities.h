@@ -2,17 +2,16 @@
 #define MATHUTILITIES
 
 #include <cmath>
-#include <QPoint>
-#include <QLine>
+#include <QPointF>
 
 namespace MathUtilities {
 
-    double length(const QPoint &a, const QPoint &b)
+    double length(const QPointF &a, const QPointF &b)
     {
         return std::sqrt((a.x()-b.x())*(a.x()-b.x()) + (a.y()-b.y())*(a.y()-b.y()));
     }
 
-    bool isOnSegment(const QPoint &a, const QPoint &b, const QPoint &c, double eps = 0.1)
+    bool isOnSegment(const QPointF &a, const QPointF &b, const QPointF &c, double eps = 0.1)
     {
 
         double ab = length(a,b);

@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QImage>
 #include <QPixmap>
-#include <QPolygon>
+#include <QPolygonF>
 #include <opencv2/opencv.hpp>
 
 
@@ -19,30 +19,34 @@ class ImageManager : public QObject
     private: cv::Mat _myImage;
     private: cv::Mat _myDrawingLayer;
 
-    public : double drawingLayerTransparency = 0.75;
+    public : double drawingLayerTransparency = 0.5;
+
+    public : double zoomFactor = 1.0;
+    public : double rulerFactor = 1.0;
+    public : double rulerLength = 0;
 
     public : void cleanDrawingLayer();
 
     public : void highlightCircle(
-            const QPoint &p,
+            const QPointF &p,
             const QColor &col,
             int radius); // note that node has radius thickness + 4
 
     public : void highlightLine(
-            const QPoint &a,
-            const QPoint &b,
+            const QPointF &a,
+            const QPointF &b,
             const QColor &col,
             int thickness); // note that line has thickness thickness + 2
 
-    public : int drawPolygon( // returns the area of polygon
-            const QPolygon &polygon,
+    public : double drawPolygon( // returns the area of polygon
+            const QPolygonF &polygon,
             const QColor &pec,
             const QColor &pc,
             const QColor &pt,
             int thickness); // note that node has radius thickness + 2
 
     public : double drawRuler( // returns the length of the ruler
-            const QPolygon &ruler,
+            const QPolygonF &ruler,
             const QColor &rec,
             const QColor &rc,
             const QColor &rt,
