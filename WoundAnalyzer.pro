@@ -5,17 +5,15 @@
 #-------------------------------------------------
 CONFIG += c++11
 CONFIG += no_keywords
-CONFIG += console
 
-QT       += core
-QT       += gui
-QT       += sql
+QT += core
+QT += gui
+QT += printsupport
+QT += sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = WoundAnalyzer
-#TEMPLATE = app
-
 
 #OpenCV
 INCLUDEPATH += e:\OpenCV_2.4.13\opencv\localBuild\include
@@ -73,4 +71,5 @@ DISTFILES += \
     Ui/Icons/Zoom-In.png \
     Ui/Icons/Zoom-Out.png \
     Ui/Icons/ZoomSmall.png \
-    Ui/Icons/Transparency.png
+    Ui/Icons/Transparency.png \
+    Ui/Icons/Export.png

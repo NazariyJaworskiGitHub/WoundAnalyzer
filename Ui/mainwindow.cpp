@@ -43,7 +43,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->actionConnect->setDisabled(true);
     ui->actionRecord->setDisabled(true);
-    ui->actionContext->setDisabled(true);
 //    DatabaseConnectionWidget *_DBConnectionForm = new DatabaseConnectionWidget(this);
 //    _DBConnectionForm->exec();
 }
@@ -71,6 +70,7 @@ void MainWindow::updateManagementModeStatus(ImageInterface::ManagementMode mode)
 void MainWindow::updatePolygonArea(double area)
 {
     _polygonArea->setText("Total wound area = " + QString::number(area));
+    ui->lineEditArea->setText(QString::number(area));
 }
 
 void MainWindow::updateRulerDistance(double distance)
@@ -80,6 +80,7 @@ void MainWindow::updateRulerDistance(double distance)
 
 void MainWindow::updateImageFileNameAndResetZoom(QString fileName)
 {
+    _imageFileName = fileName;
     this->setWindowTitle("WoundAnalyzer: " + fileName);
     ui->imageZoomFactorLabel->setText(
                 QString::number(ImageManager::instance()->zoomFactor * 100) + "%");
@@ -97,6 +98,7 @@ void MainWindow::blockInterface(bool b)
     ui->actionSettings->setDisabled(b);
     ui->actionZoom_In->setDisabled(b);
     ui->actionZoom_Out->setDisabled(b);
+    ui->actionExport_results->setDisabled(b);
     ui->zoomSlider->setDisabled(b);
     ui->imageZoomFactorLabel->setDisabled(b);
     ui->imageZoomFactorIcon->setDisabled(b);
@@ -104,6 +106,9 @@ void MainWindow::blockInterface(bool b)
     ui->RulerFactorLabel->setDisabled(b);
     ui->transparencySlider->setDisabled(b);
     ui->imageTransparencyLabel->setDisabled(b);
+    ui->labelArea->setDisabled(b);
+    ui->labelMM2->setDisabled(b);
+    ui->lineEditArea->setDisabled(b);
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -171,8 +176,10 @@ void MainWindow::on_actionSave_triggered()
                 this,
                 tr("Save wound image"),
                 tr(""),
-                tr("Image Files (*.bmp *.jpg *.jpeg *.png *.tif *.tiff)"));
-    ImageManager::instance()->saveImage(_fileName);
+                tr("JPG (*.jpg);;PNG (*.png);;BMP (*.bmp);;TIF (*.tif)"));
+    if(_fileName.size())
+        ImageManager::instance()->saveImage(_fileName);
+
 }
 
 void MainWindow::on_actionZoom_In_triggered()
@@ -220,4 +227,48 @@ void MainWindow::on_transparencySlider_valueChanged(int value)
     ImageManager::instance()->drawingLayerTransparency = value/100.0;
     ui->imageTransparencyLabel->setText(QString::number(value) + "%");
     ui->image->drawAll();
+}
+
+void MainWindow::on_actionRecord_triggered()
+{
+    /// \todo
+}
+
+void MainWindow::on_actionExport_results_triggered()
+{
+    QString _fileName = QFileDialog::getSaveFileName(
+                0,
+                QObject::tr("Save result"),
+                QObject::tr(""),
+                QObject::tr("PDF Files (*.pdf)"));
+    if(_fileName.size())
+    {
+        QPrinter printer(QPrinter::HighResolution);
+        printer.setOutputFormat(QPrinter::PdfFormat);
+        printer.setPaperSize(QPrinter::A4);
+        printer.setOutputFileName(_fileName);
+        QTextDocument doc;
+        QTextCursor cursor(&doc);
+        //cursor.movePosition(QTextCursor::End, QTextCursor::MoveAnchor);
+        cursor.insertHtml(
+                    "<h1><center>Wound Analysis Report [" +
+                    QString::number(QDate::currentDate().month()) + "." +
+                    QString::number(QDate::currentDate().day()) + "." +
+                    QString::number(QDate::currentDate().year()) + "]</<center></h1>" +
+                    "<p><b>Image: </b> " + _imageFileName + "</p><br>");
+        cursor.insertImage(ImageManager::instance()->getImageAsQImage());
+        cursor.insertHtml(
+                    "<br><p><b>Total wound area:</b> " + ui->lineEditArea->text() + " sm<sup>2</sup>" +
+                    "</p>");
+        // This is necessary if you want to hide the page number
+        //doc.setPageSize(printer.pageRect().size());
+        doc.print(&printer);
+
+        QDesktopServices::openUrl(QUrl::fromLocalFile(_fileName));
+    }
+}
+
+void MainWindow::on_actionContext_triggered()
+{
+    QDesktopServices::openUrl(QUrl::fromLocalFile("Wound analyzer context.pdf"));
 }

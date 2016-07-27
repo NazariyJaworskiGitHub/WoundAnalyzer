@@ -6,6 +6,12 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+#include <QtPrintSupport/QPrinter>
+#include <QTextDocument>
+#include <QTextCursor>
+#include <QDesktopServices>
+#include <QDate>
+
 #include "Ui/imageinterface.h"
 #include "Ui/settingswidget.h"
 #include "Ui/databaseconnectionwidget.h"
@@ -29,6 +35,8 @@ private:
     QLabel *_rulerDistance = nullptr;
     Ui::MainWindow *ui;
 
+    QString _imageFileName;
+
 private Q_SLOTS:
     void updateMousePositionStatus(QMouseEvent *ev);
     void updateManagementModeStatus(ImageInterface::ManagementMode mode);
@@ -48,6 +56,9 @@ private Q_SLOTS:
     void on_zoomSlider_valueChanged(int value);
     void on_rulerFactorDoubleSpinBox_valueChanged(double arg1);
     void on_transparencySlider_valueChanged(int value);
+    void on_actionRecord_triggered();
+    void on_actionExport_results_triggered();
+    void on_actionContext_triggered();
 };
 
 #endif // MAINWINDOW_H

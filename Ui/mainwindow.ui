@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>726</width>
+    <width>746</width>
     <height>444</height>
    </rect>
   </property>
@@ -55,7 +55,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>573</width>
+         <width>502</width>
          <height>315</height>
         </rect>
        </property>
@@ -227,7 +227,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>726</width>
+     <width>746</width>
      <height>21</height>
     </rect>
    </property>
@@ -244,6 +244,7 @@
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
+    <addaction name="actionExport_results"/>
     <addaction name="separator"/>
     <addaction name="actionPolygon"/>
     <addaction name="actionRuler"/>
@@ -278,6 +279,7 @@
    </attribute>
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
+   <addaction name="actionExport_results"/>
    <addaction name="separator"/>
    <addaction name="actionConnect"/>
    <addaction name="actionRecord"/>
@@ -302,8 +304,8 @@
    </property>
    <property name="minimumSize">
     <size>
-     <width>150</width>
-     <height>111</height>
+     <width>208</width>
+     <height>306</height>
     </size>
    </property>
    <property name="features">
@@ -335,12 +337,15 @@
      <item>
       <widget class="QLabel" name="RulerFactorLabel">
        <property name="text">
-        <string>Ruler factor:</string>
+        <string>Ruler factor (sm):</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QDoubleSpinBox" name="rulerFactorDoubleSpinBox">
+       <property name="maximum">
+        <double>99.989999999999995</double>
+       </property>
        <property name="singleStep">
         <double>0.100000000000000</double>
        </property>
@@ -348,6 +353,63 @@
         <double>1.000000000000000</double>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelResults">
+       <property name="text">
+        <string>Results:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="gridLayout">
+       <property name="leftMargin">
+        <number>9</number>
+       </property>
+       <property name="topMargin">
+        <number>9</number>
+       </property>
+       <property name="rightMargin">
+        <number>9</number>
+       </property>
+       <property name="bottomMargin">
+        <number>9</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelArea">
+         <property name="text">
+          <string>Total area</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineEditArea">
+         <property name="acceptDrops">
+          <bool>false</bool>
+         </property>
+         <property name="dragEnabled">
+          <bool>true</bool>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="labelMM2">
+         <property name="text">
+          <string>sm&lt;sup&gt;2&lt;/sup&gt;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <spacer name="verticalSpacer">
@@ -516,6 +578,18 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionExport_results">
+   <property name="icon">
+    <iconset>
+     <normaloff>Icons/Export.png</normaloff>Icons/Export.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export results...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
    </property>
   </action>
  </widget>

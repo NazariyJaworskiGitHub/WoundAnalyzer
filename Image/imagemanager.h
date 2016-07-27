@@ -55,6 +55,7 @@ class ImageManager : public QObject
     private: cv::Mat _blendLayers() const;
 
     public : const QPixmap getImageAsQPixmap() const;
+    public : const QImage getImageAsQImage() const;
 
     public : void openImage(QString fileName);
     public : void saveImage(QString fileName) const;

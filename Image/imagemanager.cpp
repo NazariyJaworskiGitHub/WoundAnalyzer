@@ -153,12 +153,25 @@ cv::Mat ImageManager::_blendLayers() const
                 0.0,
                 _result);
 
+//    cv::cvtColor(_myImage, _result, cv::COLOR_BGR2GRAY);
+//    cv::Canny(_result, _result, rulerFactor*500 , zoomFactor*500, 5);
+//    std::vector<std::vector<cv::Point>> contours;
+//    cv::findContours(_result, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_KCOS);
+//    for(size_t k = 0; k < contours.size(); ++k)
+//        cv::approxPolyDP(contours[k], contours[k], 3, true);
+//    cv::drawContours(_result, contours, -1, cv::Scalar(255), 1);
+
     return _result;
 }
 
 const QPixmap ImageManager::getImageAsQPixmap() const
 {
     return QPixmap::fromImage(Mat2QImage(_blendLayers()));
+}
+
+const QImage ImageManager::getImageAsQImage() const
+{
+    return Mat2QImage(_blendLayers());
 }
 
 void ImageManager::openImage(QString fileName)
