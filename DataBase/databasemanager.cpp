@@ -14,6 +14,11 @@ DatabaseManager::DatabaseManager(QObject *parent):
 bool DatabaseManager::connectToDatabase(
         QString hName, QString dbName, QString uName, QString password)
 {
+    Log::StaticLogger::instance() << "[Database] connecting to " +
+                                     hName.toStdString() + " " +
+                                     dbName.toStdString() + " " +
+                                     uName.toStdString() + "\n";
+
     QSqlDatabase _db = QSqlDatabase::addDatabase(
                 "QMYSQL",DATABASENAME);
 //    _db.setDatabaseName("Driver={Microsoft Access Driver (*.mdb, *.accdb)};DSN='';DBQ=WoundData.mdb");
@@ -23,6 +28,13 @@ bool DatabaseManager::connectToDatabase(
     _db.setPassword(password);
     _db.setConnectOptions("MYSQL_OPT_RECONNECT=1");
     _isConnectedFlag = _db.open();
+
+    if(_isConnectedFlag)
+        Log::StaticLogger::instance() << "[Database] connection succeed\n";
+    else
+        Log::StaticLogger::instance() << "[Database] <FAIL> "
+                                         + lastError().text().toStdString() + "\n";
+
     return _isConnectedFlag;
 }
 

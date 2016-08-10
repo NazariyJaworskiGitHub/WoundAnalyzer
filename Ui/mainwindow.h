@@ -16,6 +16,8 @@
 #include "Ui/settingswidget.h"
 #include "Ui/databaseconnectionwidget.h"
 
+#include "Utilities/Logger/logger.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -31,7 +33,6 @@ public:
 private:
     QLabel *_mousePosition = nullptr;
     QLabel *_managementMode = nullptr;
-    QLabel *_polygonArea = nullptr;
     QLabel *_rulerDistance = nullptr;
     Ui::MainWindow *ui;
 
@@ -59,6 +60,11 @@ private Q_SLOTS:
     void on_actionRecord_triggered();
     void on_actionExport_results_triggered();
     void on_actionContext_triggered();
+    void on_doubleSpinBox_valueChanged(double arg1);
+    void on_doubleSpinBox_2_valueChanged(double arg1);
+    void on_spinBox_valueChanged(int arg1);
+    void on_doubleSpinBox_3_valueChanged(double arg1);
+    void on_actionConnect_triggered();
 };
 
 #endif // MAINWINDOW_H

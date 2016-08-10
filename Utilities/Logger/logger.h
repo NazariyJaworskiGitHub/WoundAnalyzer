@@ -30,6 +30,17 @@ namespace Log
         public : Logger(const std::string &logFileName, QObject *parent = 0);
         public : ~Logger();
     };
+
+    class StaticLogger : public Logger
+    {
+        Q_OBJECT
+
+        private: StaticLogger(): Logger("LogFile.log") {}
+        private: ~StaticLogger(){start();}
+        public : static StaticLogger& instance(){
+            static StaticLogger _instanceOfStaticLogger;
+            return _instanceOfStaticLogger;}
+    };
 }
 
 #endif // LOGGER_H

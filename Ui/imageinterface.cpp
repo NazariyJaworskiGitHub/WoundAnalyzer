@@ -268,6 +268,9 @@ void ImageInterface::mousePressEvent(QMouseEvent *ev)
                 _nodeToMove = _findNodeWithPosInPolygons(ev->pos());
                 if(!_nodeToMove)
                     _nodeToMove = _findNodeWithPosInRuler(ev->pos());
+
+//                ImageManager::instance()->floodFill(ev->pos());
+//                drawAll();
             }
         }
         else if(ev->button() == Qt::RightButton)

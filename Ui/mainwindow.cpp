@@ -16,12 +16,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     _mousePosition = new QLabel("0,0",this);
     _managementMode = new QLabel("Edit mode, LMB to drag nodes, RMB to delete polygon nodes or split edges",this);
-    _polygonArea = new QLabel("Total wound area = 0",this);
     _rulerDistance = new QLabel("Ruler lengt = 0px",this);
 
     ui->statusBar->addWidget(_mousePosition);
     ui->statusBar->addWidget(_managementMode);
-    ui->statusBar->addWidget(_polygonArea);
     ui->statusBar->addWidget(_rulerDistance);
 
     connect(ui->image,SIGNAL(mouseMoved_signal(QMouseEvent*)),
@@ -41,10 +39,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     blockInterface(true);
 
-    ui->actionConnect->setDisabled(true);
+//    ui->actionConnect->setDisabled(true);
     ui->actionRecord->setDisabled(true);
-//    DatabaseConnectionWidget *_DBConnectionForm = new DatabaseConnectionWidget(this);
-//    _DBConnectionForm->exec();
+
+    showMaximized();
 }
 
 MainWindow::~MainWindow()
@@ -69,7 +67,6 @@ void MainWindow::updateManagementModeStatus(ImageInterface::ManagementMode mode)
 
 void MainWindow::updatePolygonArea(double area)
 {
-    _polygonArea->setText("Total wound area = " + QString::number(area));
     ui->lineEditArea->setText(QString::number(area));
 }
 
@@ -235,7 +232,7 @@ void MainWindow::on_actionRecord_triggered()
 }
 
 void MainWindow::on_actionExport_results_triggered()
-{
+{    
     QString _fileName = QFileDialog::getSaveFileName(
                 0,
                 QObject::tr("Save result"),
@@ -243,6 +240,8 @@ void MainWindow::on_actionExport_results_triggered()
                 QObject::tr("PDF Files (*.pdf)"));
     if(_fileName.size())
     {
+        Log::StaticLogger::instance() << "[Utilities] exporting results to pdf file\n";
+
         QPrinter printer(QPrinter::HighResolution);
         printer.setOutputFormat(QPrinter::PdfFormat);
         printer.setPaperSize(QPrinter::A4);
@@ -264,11 +263,59 @@ void MainWindow::on_actionExport_results_triggered()
         //doc.setPageSize(printer.pageRect().size());
         doc.print(&printer);
 
-        QDesktopServices::openUrl(QUrl::fromLocalFile(_fileName));
+        bool _result = QDesktopServices::openUrl(QUrl::fromLocalFile(_fileName));
+        if(_result)
+            Log::StaticLogger::instance() << "[Utilities] results are shown\n";
+        else
+            Log::StaticLogger::instance() << "[Utilities] <FAIL> results are not shown\n";
     }
 }
 
 void MainWindow::on_actionContext_triggered()
 {
-    QDesktopServices::openUrl(QUrl::fromLocalFile("Wound analyzer context.pdf"));
+    Log::StaticLogger::instance() << "[Utilities] openint context file\n";
+    bool _result = QDesktopServices::openUrl(QUrl::fromLocalFile("Wound analyzer context.pdf"));
+    if(_result)
+        Log::StaticLogger::instance() << "[Utilities] context file is opened\n";
+    else
+        Log::StaticLogger::instance() << "[Utilities] <FAIL> context file is not opened\n";
+}
+
+void MainWindow::on_doubleSpinBox_valueChanged(double arg1)
+{
+    ImageManager::instance()->filterFactorA = arg1;
+    ImageManager::instance()->applyFiltration();
+    ui->image->drawAll();
+}
+
+void MainWindow::on_doubleSpinBox_2_valueChanged(double arg1)
+{
+    ImageManager::instance()->filterFactorB = arg1;
+    ImageManager::instance()->applyFiltration();
+    ui->image->drawAll();
+}
+
+void MainWindow::on_spinBox_valueChanged(int arg1)
+{
+    ImageManager::instance()->filterIterations = arg1;
+    ImageManager::instance()->applyFiltration();
+    ui->image->drawAll();
+}
+
+void MainWindow::on_doubleSpinBox_3_valueChanged(double arg1)
+{
+    ImageManager::instance()->filterFactorC = arg1;
+    ImageManager::instance()->applyFiltration();
+    ui->image->drawAll();
+}
+
+void MainWindow::on_actionConnect_triggered()
+{
+    DatabaseConnectionWidget *_DBConnectionForm = new DatabaseConnectionWidget(this);
+    _DBConnectionForm->exec();
+
+    if(DatabaseManager::instance()->isConnected())
+    {
+        /// \todo
+    }
 }

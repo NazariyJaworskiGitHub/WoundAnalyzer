@@ -32,7 +32,8 @@ double ImageManager::drawPolygon(
         const QColor &pec,
         const QColor &pc,
         const QColor &pt,
-        int thickness)
+        int thickness,
+        bool drawText)
 {
     double _area = 0;
     if(polygon.size() != 0)
@@ -76,7 +77,8 @@ double ImageManager::drawPolygon(
                         (rulerFactor / rulerLength) *
                         (rulerFactor / rulerLength);
             else _area = cv::contourArea(_tmpPoly);
-            cv::putText(
+            if(drawText)
+                cv::putText(
                         _myDrawingLayer,
                         QString::number(_area).toStdString(),
                          _tmpPoly[0],
@@ -94,7 +96,8 @@ double ImageManager::drawRuler(
         const QColor &rec,
         const QColor &rc,
         const QColor &rt,
-        int thickness)
+        int thickness,
+        bool drawText)
 {
     double _distance = 0;
     if(ruler.size() != 0)
@@ -120,7 +123,8 @@ double ImageManager::drawRuler(
             _distance = std::sqrt((ruler[0].x()-ruler[1].x())*(ruler[0].x()-ruler[1].x()) +
                     (ruler[0].y()-ruler[1].y())*(ruler[0].y()-ruler[1].y()));
 
-            cv::putText(
+            if(drawText)
+                cv::putText(
                         _myDrawingLayer,
                         QString::number(_distance).toStdString() + "px",
                         cv::Point(
@@ -135,11 +139,33 @@ double ImageManager::drawRuler(
     return _distance;
 }
 
+void ImageManager::applyFiltration()
+{
+//    cv::Mat _result = _myImage.clone();
+    cv::Mat _result;
+    cv::cvtColor(_myImage, _result, cv::COLOR_BGR2GRAY);
+//    cv::resize(_myImage,_result,cv::Size(),zoomFactor,zoomFactor);
+    for(int i=0; i<filterIterations; ++i)
+    {
+        cv::Mat _tmp;
+        cv::bilateralFilter(_result,_tmp,0,filterFactorA,filterFactorB);
+        cv::GaussianBlur(_tmp,_tmp,cv::Size(5,5),filterFactorC);
+        _result = _tmp.clone();
+    }
+    _myFilteredImage = _result.clone();
+}
+
+void ImageManager::floodFill(QPoint p)
+{
+    cv::floodFill(_myFilteredImage,cv::Point(p.x(),p.y()),cv::Scalar(255,255,255),0,
+                  cv::Scalar(rulerFactor,rulerFactor,rulerFactor),
+                  cv::Scalar(rulerFactor,rulerFactor,rulerFactor));
+}
+
 cv::Mat ImageManager::_blendLayers() const
 {
     cv::Mat _result;
-
-    cv::resize(_myImage,_result,cv::Size(),zoomFactor,zoomFactor);
+    cv::resize(_myFilteredImage,_result,cv::Size(),zoomFactor,zoomFactor);
 
 //    cv::Mat _mask = _result & _myDrawingLayer;
 //    cv::Mat _binaryMask;
@@ -153,13 +179,16 @@ cv::Mat ImageManager::_blendLayers() const
                 0.0,
                 _result);
 
-//    cv::cvtColor(_myImage, _result, cv::COLOR_BGR2GRAY);
-//    cv::Canny(_result, _result, rulerFactor*500 , zoomFactor*500, 5);
+//    cv::Mat _tmp;
+//    cv::cvtColor(_result, _tmp, cv::COLOR_BGR2GRAY);
+//    cv::Canny(_tmp, _tmp, rulerFactor*100, drawingLayerTransparency*100);
+
+//    _result = _tmp.clone();
 //    std::vector<std::vector<cv::Point>> contours;
-//    cv::findContours(_result, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_TC89_KCOS);
+//    cv::findContours(_tmp, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 //    for(size_t k = 0; k < contours.size(); ++k)
 //        cv::approxPolyDP(contours[k], contours[k], 3, true);
-//    cv::drawContours(_result, contours, -1, cv::Scalar(255), 1);
+//    cv::drawContours(_result, contours, -1, cv::Scalar(255,255,255), 1);
 
     return _result;
 }
@@ -176,6 +205,8 @@ const QImage ImageManager::getImageAsQImage() const
 
 void ImageManager::openImage(QString fileName)
 {
+    Log::StaticLogger::instance() << "[Image] opening " + fileName.toStdString() + "\n";
+
     _myImage = cv::imread(fileName.toLocal8Bit().constData(), cv::IMREAD_COLOR);
     if(!_myImage.empty())
     {
@@ -184,12 +215,24 @@ void ImageManager::openImage(QString fileName)
         zoomFactor = 1.0;
         rulerFactor = 1.0;
         rulerLength = 0;
+        _myFilteredImage = _myImage.clone();
+
+        Log::StaticLogger::instance() << "[Image] image is opened\n";
     }
+    else
+        Log::StaticLogger::instance() << "[Image] <FAIL> image is not opened\n";
 }
 
 void ImageManager::saveImage(QString fileName) const
 {
-    cv::imwrite(fileName.toLocal8Bit().constData(),_blendLayers());
+    Log::StaticLogger::instance() << "[Image] saving " + fileName.toStdString() + "\n";
+
+    bool _result = cv::imwrite(fileName.toLocal8Bit().constData(),_blendLayers());
+
+    if(_result)
+        Log::StaticLogger::instance() << "[Image] image is saved\n";
+    else
+        Log::StaticLogger::instance() << "[Image] <FAIL> image is not saved\n";
 }
 
 QImage ImageManager::Mat2QImage(cv::Mat const& src)

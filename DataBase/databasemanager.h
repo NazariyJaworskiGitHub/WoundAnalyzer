@@ -12,6 +12,8 @@
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlError>
 
+#include "Utilities/Logger/logger.h"
+
 /// Holds all functionality related to database
 /// Use for singe MySQL Database managment
 class DatabaseManager : public QObject

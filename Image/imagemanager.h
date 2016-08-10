@@ -7,6 +7,8 @@
 #include <QPolygonF>
 #include <opencv2/opencv.hpp>
 
+#include "Utilities/Logger/logger.h"
+
 
 /// Manages image
 /// \todo move it all to ImageInterface
@@ -17,6 +19,7 @@ class ImageManager : public QObject
     public : bool isImageOpened = false;
 
     private: cv::Mat _myImage;
+    private: cv::Mat _myFilteredImage;
     private: cv::Mat _myDrawingLayer;
 
     public : double drawingLayerTransparency = 0.5;
@@ -24,6 +27,13 @@ class ImageManager : public QObject
     public : double zoomFactor = 1.0;
     public : double rulerFactor = 1.0;
     public : double rulerLength = 0;
+
+    public : double filterFactorA = 1.0;
+    public : double filterFactorB = 1.0;
+    public : double filterFactorC = 1.0;
+    public : double filterFactorD = 1.0;
+    public : double filterFactorE = 1.0;
+    public : double filterIterations = 0;
 
     public : void cleanDrawingLayer();
 
@@ -43,14 +53,20 @@ class ImageManager : public QObject
             const QColor &pec,
             const QColor &pc,
             const QColor &pt,
-            int thickness); // note that node has radius thickness + 2
+            int thickness,
+            bool drawText = true); // note that node has radius thickness + 2
 
     public : double drawRuler( // returns the length of the ruler
             const QPolygonF &ruler,
             const QColor &rec,
             const QColor &rc,
             const QColor &rt,
-            int thickness); // note that node has radius thickness + 2
+            int thickness,
+            bool drawText = true); // note that node has radius thickness + 2
+
+    public : void applyFiltration();
+
+    public : void floodFill(QPoint p);
 
     private: cv::Mat _blendLayers() const;
 
