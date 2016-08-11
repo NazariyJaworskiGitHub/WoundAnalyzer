@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     Ui/databaseconnectionedititemwidget.cpp \
     Image/imagemanager.cpp \
     Ui/imageinterface.cpp \
-    Ui/settingswidget.cpp
+    Ui/settingswidget.cpp \
+    DataBase/databasemodel.cpp
 
 HEADERS  += Ui/mainwindow.h \
     DataBase/databasemanager.h \
@@ -50,7 +51,8 @@ HEADERS  += Ui/mainwindow.h \
     Image/imagemanager.h \
     Ui/imageinterface.h \
     Ui/settingswidget.h \
-    Utilities/mathutilities.h
+    Utilities/mathutilities.h \
+    DataBase/databasemodel.h
 
 FORMS    += Ui/mainwindow.ui \
     Ui/databaseconnectionwidget.ui \

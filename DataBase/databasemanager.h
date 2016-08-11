@@ -9,9 +9,15 @@
 //#include <fstream>
 
 #include <QObject>
+//#include <QSqlQueryModel>
+#include <QStandardItemModel>
+#include <QtSql/QSqlRecord>
+#include <QtSql/QSqlQuery>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlError>
+#include <QIcon>
 
+#include "DataBase/databasemodel.h"
 #include "Utilities/Logger/logger.h"
 
 /// Holds all functionality related to database
@@ -37,6 +43,9 @@ class DatabaseManager : public QObject
                 QString dbConnectionsFilename = "DBConnections.txt") const;
     public : QList<QStringList> loadConnectionsFromFile(
                 QString dbConnectionsFilename = "DBConnections.txt") const;
+
+    public : QStandardItemModel *prepareDatabaseModel(QObject *paretn);
+
         /// Common constructor,
         /// parent not used
     private: DatabaseManager(QObject *parent = nullptr);

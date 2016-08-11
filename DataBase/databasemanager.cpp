@@ -15,8 +15,8 @@ bool DatabaseManager::connectToDatabase(
         QString hName, QString dbName, QString uName, QString password)
 {
     Log::StaticLogger::instance() << "[Database] connecting to " +
-                                     hName.toStdString() + " " +
-                                     dbName.toStdString() + " " +
+                                     dbName.toStdString() + " at " +
+                                     hName.toStdString() + " with login " +
                                      uName.toStdString() + "\n";
 
     QSqlDatabase _db = QSqlDatabase::addDatabase(
@@ -96,6 +96,68 @@ QList<QStringList> DatabaseManager::loadConnectionsFromFile(QString dbConnection
         // return empty list
     }
     return _connections;
+}
+
+QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *paretn)
+{
+    QSqlQuery query(QSqlDatabase::database(DATABASENAME));
+    QSqlRecord record;
+    QString str;
+    int doctorId;
+
+    QStandardItemModel * model = new QStandardItemModel(paretn);
+    QStandardItem *currentItem = model->invisibleRootItem();
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    {
+        Log::StaticLogger::instance() << "[Database] searching id of " +
+                QSqlDatabase::database(DATABASENAME).userName().toStdString() + "\n";
+        str = "SELECT ID FROM Doctors WHERE DoctorName = '" +
+                QSqlDatabase::database(DATABASENAME).userName() + "'";
+        if(query.exec(str))
+            Log::StaticLogger::instance() << "[Database] id found\n";
+        else
+        {
+            Log::StaticLogger::instance() << "[Database] <FAIL> "
+                                             + query.lastError().text().toStdString() + "\n";
+            /// \todo error
+        }
+        record = query.record();
+        query.next();
+        doctorId = query.value(record.indexOf("ID")).toInt();
+        QIcon doctorIcon(QStringLiteral("Icons/Doctor.png"));
+        QStandardItem *item = new QStandardItem(
+                    doctorIcon,
+                    QSqlDatabase::database(DATABASENAME).userName());
+        currentItem->appendRow(item);
+        currentItem = item;
+    }
+    //////////////////////////////////////////////////////////////////////////////////////
+    {
+        Log::StaticLogger::instance() << "[Database] loading patients of " +
+                QSqlDatabase::database(DATABASENAME).userName().toStdString() + "\n";
+        str = "SELECT PatientName FROM Patients WHERE DoctorID = " + QString::number(doctorId);
+
+        if(query.exec(str))
+            Log::StaticLogger::instance() << "[Database] patients are loaded\n";
+        else
+        {
+            Log::StaticLogger::instance() << "[Database] <FAIL> "
+                                             + query.lastError().text().toStdString() + "\n";
+            /// \todo error
+        }
+        QIcon patientIcon(QStringLiteral("Icons/Patient.png"));
+        record = query.record();
+        while(query.next())
+        {
+            Patient * patient = new Patient{query.value(record.indexOf("PatientName")).toString()};
+            QStandardItem *item = new QStandardItem(patientIcon, patient->PatientName);
+            currentItem->appendRow(item);
+        }
+    }
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    return model;
 }
 
 QSqlError DatabaseManager::lastError() const

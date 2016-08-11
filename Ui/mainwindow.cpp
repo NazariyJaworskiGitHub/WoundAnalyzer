@@ -316,6 +316,8 @@ void MainWindow::on_actionConnect_triggered()
 
     if(DatabaseManager::instance()->isConnected())
     {
+        ui->treeView->setModel(DatabaseManager::instance()->prepareDatabaseModel(this));
+        ui->treeView->show();
         /// \todo
     }
 }
