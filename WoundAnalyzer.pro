@@ -31,18 +31,15 @@ LIBS += e:\OpenCV_2.4.13\opencv\localBuild_x32\lib\libopencv_video2413.dll.a
 SOURCES += main.cpp\
     Ui/mainwindow.cpp \
     DataBase/databasemanager.cpp \
-    Utilities/Logger/logger.cpp \
     Ui/databaseconnectionwidget.cpp \
     Ui/databaseconnectionedititemwidget.cpp \
     Image/imagemanager.cpp \
     Ui/imageinterface.cpp \
-    Ui/settingswidget.cpp \
-    DataBase/databasemodel.cpp
+    Ui/settingswidget.cpp
 
 HEADERS  += Ui/mainwindow.h \
     DataBase/databasemanager.h \
     Utilities/Logger/logger.h \
-    Utilities/Logger/loggerprivate.h \
     Utilities/timer.h \
     Ui/databaseconnectionwidget.h \
     Ui/databaseconnectioneditwidget.h \

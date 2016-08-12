@@ -4,39 +4,42 @@
 /// \warning make shure that you are using compiler native libstdc...dll,
 /// but not QT libstdc...dll, or it causes errors
 /// see http://forum.qt.io/topic/45306/solved-runtime-error-with-mingw-ifstream-qt-creator/11
-#include <fstream>
 
-#include <QThread>
+#include <fstream>
+#include <ctime>
+#include <iomanip>
 
 namespace Log
 {
-    /// Logger is running in its oun thread and is independed from other;
-    /// Use '<<' operator to put the message into logfile;
-    class Logger : public QThread
+    class StaticLogger
     {
-        Q_OBJECT
-
-        private: bool _isEventLoopRunning = false;
         private: std::ofstream _logFileStream;
-
-        /// Output format is
-        /// [hh.mm.ss] msg std::endl
-        public : void operator << (const std::string &msg) noexcept;
-        private: Q_SIGNAL void signal_sendMsgToLogger(const QString &msg);
-
-        public : void run() override;
-
-        /// Define parent to destroy logger on parent destruction
-        public : Logger(const std::string &logFileName, QObject *parent = 0);
-        public : ~Logger();
-    };
-
-    class StaticLogger : public Logger
-    {
-        Q_OBJECT
-
-        private: StaticLogger(): Logger("LogFile.log") {}
-        private: ~StaticLogger(){start();}
+        private: StaticLogger(const std::string &logFileName = "LogFile.log")
+        {
+            _logFileStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+            _logFileStream.open(logFileName);
+            *this << "Logging is started.\n";
+        }
+        public : void operator << (const std::string &msg) noexcept
+        {
+            std::time_t _time = std::time(NULL);
+            std::tm _timeInfo(*std::localtime(&_time));
+            _logFileStream << "["
+                           << std::setfill('0') << std::setw(2) << _timeInfo.tm_hour
+                           << ":"
+                           << std::setfill('0') << std::setw(2) << _timeInfo.tm_min
+                           << ":"
+                           << std::setfill('0') << std::setw(2) << _timeInfo.tm_sec
+                           << "] ";
+            _logFileStream << msg;
+            _logFileStream.flush();
+        }
+        private: ~StaticLogger()
+        {
+            *this << "Logging is finished.\n";
+            _logFileStream.flush();
+            _logFileStream.close();
+        }
         public : static StaticLogger& instance(){
             static StaticLogger _instanceOfStaticLogger;
             return _instanceOfStaticLogger;}

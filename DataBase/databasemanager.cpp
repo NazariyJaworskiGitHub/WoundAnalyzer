@@ -98,66 +98,112 @@ QList<QStringList> DatabaseManager::loadConnectionsFromFile(QString dbConnection
     return _connections;
 }
 
-QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *paretn)
+QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
 {
-    QSqlQuery query(QSqlDatabase::database(DATABASENAME));
     QSqlRecord record;
     QString str;
-    int doctorId;
 
-    QStandardItemModel * model = new QStandardItemModel(paretn);
-    QStandardItem *currentItem = model->invisibleRootItem();
+    QIcon patientIcon(QStringLiteral("Icons/Patient.png"));
+    QIcon doctorIcon(QStringLiteral("Icons/Doctor.png"));
+    QIcon woundIcon(QStringLiteral("Icons/Wound.png"));
+    QIcon surveyIcon(QStringLiteral("Icons/Survey.png"));
+
+    if(DBrep) delete DBrep;
+    DBrep = new DatabaseModel(parent);
 
     /////////////////////////////////////////////////////////////////////////////////////
     {
-        Log::StaticLogger::instance() << "[Database] searching id of " +
-                QSqlDatabase::database(DATABASENAME).userName().toStdString() + "\n";
-        str = "SELECT ID FROM Doctors WHERE DoctorName = '" +
-                QSqlDatabase::database(DATABASENAME).userName() + "'";
-        if(query.exec(str))
+        QSqlQuery doctorsQuery(QSqlDatabase::database(DATABASENAME));
+        Log::StaticLogger::instance() << "[Database] searching id of " + QSqlDatabase::database(DATABASENAME).userName().toStdString() + "\n";
+        str = "SELECT * FROM Doctors WHERE DoctorName = '" + QSqlDatabase::database(DATABASENAME).userName() + "'";
+        if(doctorsQuery.exec(str))
             Log::StaticLogger::instance() << "[Database] id found\n";
         else
         {
-            Log::StaticLogger::instance() << "[Database] <FAIL> "
-                                             + query.lastError().text().toStdString() + "\n";
-            /// \todo error
+            Log::StaticLogger::instance() << "[Database] <FAIL> " + doctorsQuery.lastError().text().toStdString() + "\n";
+            return nullptr;
         }
-        record = query.record();
-        query.next();
-        doctorId = query.value(record.indexOf("ID")).toInt();
-        QIcon doctorIcon(QStringLiteral("Icons/Doctor.png"));
-        QStandardItem *item = new QStandardItem(
-                    doctorIcon,
-                    QSqlDatabase::database(DATABASENAME).userName());
-        currentItem->appendRow(item);
-        currentItem = item;
+        doctorsQuery.next();
+        record = doctorsQuery.record();
+        DBrep->addDoctor(new Doctor(
+                             doctorIcon,
+                             QSqlDatabase::database(DATABASENAME).userName(),
+                             doctorsQuery.value(record.indexOf("ID")).toInt()));
     }
     //////////////////////////////////////////////////////////////////////////////////////
     {
-        Log::StaticLogger::instance() << "[Database] loading patients of " +
-                QSqlDatabase::database(DATABASENAME).userName().toStdString() + "\n";
-        str = "SELECT PatientName FROM Patients WHERE DoctorID = " + QString::number(doctorId);
-
-        if(query.exec(str))
+        QSqlQuery patientsQuery(QSqlDatabase::database(DATABASENAME));
+        Log::StaticLogger::instance() << "[Database] loading patients of " + QSqlDatabase::database(DATABASENAME).userName().toStdString() + "\n";
+        str = "SELECT * FROM Patients WHERE DoctorID = " + QString::number(DBrep->doctor->DoctorID);
+        if(patientsQuery.exec(str))
             Log::StaticLogger::instance() << "[Database] patients are loaded\n";
         else
         {
-            Log::StaticLogger::instance() << "[Database] <FAIL> "
-                                             + query.lastError().text().toStdString() + "\n";
-            /// \todo error
+            Log::StaticLogger::instance() << "[Database] <FAIL> " + patientsQuery.lastError().text().toStdString() + "\n";
+            return nullptr;
         }
-        QIcon patientIcon(QStringLiteral("Icons/Patient.png"));
-        record = query.record();
-        while(query.next())
+        while(patientsQuery.next())
         {
-            Patient * patient = new Patient{query.value(record.indexOf("PatientName")).toString()};
-            QStandardItem *item = new QStandardItem(patientIcon, patient->PatientName);
-            currentItem->appendRow(item);
+            record = patientsQuery.record();
+            Patient * patient = new Patient(
+                        patientIcon,
+                        patientsQuery.value(record.indexOf("PatientName")).toString(),
+                        patientsQuery.value(record.indexOf("ID")).toInt());
+            DBrep->doctor->addPatient(patient);
+
+            ///////////////////////////////////////////////////////////////////////////////
+            {
+                QSqlQuery woundsQuery(QSqlDatabase::database(DATABASENAME));
+                Log::StaticLogger::instance() << "[Database] loading wounds of " + patient->PatientName.toStdString() + "\n";
+                str = "SELECT * FROM Wounds WHERE PatientID = " + QString::number(patient->PatientID);
+                if(woundsQuery.exec(str))
+                    Log::StaticLogger::instance() << "[Database] wounds are loaded\n";
+                else
+                {
+                    Log::StaticLogger::instance() << "[Database] <FAIL> " + woundsQuery.lastError().text().toStdString() + "\n";
+                    return nullptr;
+                }
+                while(woundsQuery.next())
+                {
+                    record = woundsQuery.record();
+                    Wound * wound = new Wound(
+                                woundIcon,
+                                woundsQuery.value(record.indexOf("WoundName")).toString(),
+                                woundsQuery.value(record.indexOf("ID")).toInt(),
+                                woundsQuery.value(record.indexOf("Notes")).toString());
+                    patient->addWound(wound);
+                    ///////////////////////////////////////////////////////////////////////
+                    {
+                        QSqlQuery surveyQuery(QSqlDatabase::database(DATABASENAME));
+                        Log::StaticLogger::instance() << "[Database] loading surveys of " + wound->WoundName.toStdString() + "\n";
+                        str = "SELECT * FROM Surveys WHERE WoundID = " + QString::number(wound->WoundID);
+                        if(surveyQuery.exec(str))
+                            Log::StaticLogger::instance() << "[Database] surveys are loaded\n";
+                        else
+                        {
+                            Log::StaticLogger::instance() << "[Database] <FAIL> " + surveyQuery.lastError().text().toStdString() + "\n";
+                            return nullptr;
+                        }
+                        while(surveyQuery.next())
+                        {
+                            record = surveyQuery.record();
+                            Survey * survey = new Survey(
+                                        surveyIcon,
+                                        surveyQuery.value(record.indexOf("SurveyDate")).toDateTime(),
+                                        surveyQuery.value(record.indexOf("ID")).toInt(),
+                                        surveyQuery.value(record.indexOf("Notes")).toString());
+                            wound->addSurvey(survey);
+                        }
+                    }
+                    ///////////////////////////////////////////////////////////////////////
+                }
+            }
+            ///////////////////////////////////////////////////////////////////////////////
         }
     }
     ///////////////////////////////////////////////////////////////////////////////////////
 
-    return model;
+    return DBrep->model;
 }
 
 QSqlError DatabaseManager::lastError() const
@@ -175,6 +221,8 @@ DatabaseManager::~DatabaseManager()
         }
         QSqlDatabase::removeDatabase(DATABASENAME);
     }
+    if(DBrep)
+        delete DBrep;
 }
 
 DatabaseManager *DatabaseManager::instance()

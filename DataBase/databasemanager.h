@@ -44,7 +44,8 @@ class DatabaseManager : public QObject
     public : QList<QStringList> loadConnectionsFromFile(
                 QString dbConnectionsFilename = "DBConnections.txt") const;
 
-    public : QStandardItemModel *prepareDatabaseModel(QObject *paretn);
+    public : DatabaseModel *DBrep = nullptr;
+    public : QStandardItemModel *prepareDatabaseModel(QObject *parent);
 
         /// Common constructor,
         /// parent not used
