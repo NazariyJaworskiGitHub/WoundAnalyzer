@@ -19,6 +19,7 @@ class ImageManager : public QObject
     public : bool isImageOpened = false;
 
     private: cv::Mat _myImage;
+    public : const cv::Mat & getImage() const {return _myImage;}
     private: cv::Mat _myFilteredImage;
     private: cv::Mat _myDrawingLayer;
 
@@ -73,10 +74,12 @@ class ImageManager : public QObject
     public : const QPixmap getImageAsQPixmap() const;
     public : const QImage getImageAsQImage() const;
 
-    public : void openImage(QString fileName);
-    public : void saveImage(QString fileName) const;
+    private: void _onLoadImageCleanup();
+    public : void openImage(const cv::Mat &image);
+    public : void openImage(const QString &fileName);
+    public : void saveImage(const QString &fileName) const;
 
-    public : static QImage Mat2QImage(cv::Mat const& src);
+    public : static QImage Mat2QImage(const cv::Mat &src);
 
     private: ImageManager(QObject *parent = nullptr);
     private: ~ImageManager();

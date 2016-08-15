@@ -9,6 +9,13 @@ ImageInterface::ImageInterface(QWidget *parent):
     setAcceptDrops(true);
 }
 
+void ImageInterface::openImage(const cv::Mat &image, const QString &title)
+{
+    ImageManager::instance()->openImage(image);
+    Q_EMIT updateFilenameAndResetZoom_signal(title);
+    clearAll();
+}
+
 void ImageInterface::openImage(QString fileName)
 {
     ImageManager::instance()->openImage(fileName);

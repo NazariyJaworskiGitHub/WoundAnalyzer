@@ -17,6 +17,7 @@ class ImageInterface : public QLabel
 
     public : explicit ImageInterface(QWidget *parent = nullptr);
 
+    public : void openImage(const cv::Mat &image, const QString &title);
     public : void openImage(QString fileName);
     public : Q_SIGNAL void updateFilenameAndResetZoom_signal(QString fileName);
 

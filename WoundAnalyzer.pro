@@ -5,6 +5,7 @@
 #-------------------------------------------------
 CONFIG += c++11
 CONFIG += no_keywords
+#CONFIG += console
 
 QT += core
 QT += gui
@@ -71,4 +72,5 @@ DISTFILES += \
     Ui/Icons/Zoom-Out.png \
     Ui/Icons/ZoomSmall.png \
     Ui/Icons/Transparency.png \
-    Ui/Icons/Export.png
+    Ui/Icons/Export.png \
+    Ui/Icons/Add.png

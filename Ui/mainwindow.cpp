@@ -37,10 +37,15 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->image,SIGNAL(updateRulerDistance_signal(double)),
         this, SLOT(updateRulerDistance(double)));
 
-    blockInterface(true);
+    _DBToolbar = new QToolBar(this);
+    _DBToolbar->addAction(ui->actionAdd);
+    _DBToolbar->addAction(ui->actionDelete);
+    _DBToolbar->addAction(ui->actionUpdate);
+    _DBToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    ui->databaseHolderContents->layout()->addWidget(_DBToolbar);
 
-//    ui->actionConnect->setDisabled(true);
-    ui->actionRecord->setDisabled(true);
+    blockMainActions(true);
+    blockDatabaseActions(true);
 
     showMaximized();
 }
@@ -78,7 +83,7 @@ void MainWindow::updateRulerDistance(double distance)
 void MainWindow::updateImageFileNameAndResetZoom(QString fileName)
 {
     _imageFileName = fileName;
-    this->setWindowTitle("WoundAnalyzer: " + fileName);
+    this->setWindowTitle("WoundAnalyzer: [" + fileName +"]");
     ui->imageZoomFactorLabel->setText(
                 QString::number(ImageManager::instance()->zoomFactor * 100) + "%");
     ui->zoomSlider->blockSignals(true);
@@ -86,7 +91,7 @@ void MainWindow::updateImageFileNameAndResetZoom(QString fileName)
     ui->zoomSlider->blockSignals(false);
 }
 
-void MainWindow::blockInterface(bool b)
+void MainWindow::blockMainActions(bool b)
 {
     ui->actionPolygon->setDisabled(b);
     ui->actionRuler->setDisabled(b);
@@ -108,6 +113,15 @@ void MainWindow::blockInterface(bool b)
     ui->lineEditArea->setDisabled(b);
 }
 
+void MainWindow::blockDatabaseActions(bool b)
+{
+    ui->actionAdd->setDisabled(b);
+    ui->actionDelete->setDisabled(b);
+    ui->actionUpdate->setDisabled(b);
+    ui->databaseNameLineEdit->setDisabled(b);
+    ui->databaseNotesPlainTextEdit->setDisabled(b);
+}
+
 void MainWindow::on_actionOpen_triggered()
 {
     QString _fileName = QFileDialog::getOpenFileName(
@@ -118,7 +132,7 @@ void MainWindow::on_actionOpen_triggered()
     if(_fileName.size())
     {
         ui->image->openImage(_fileName);
-        blockInterface(false);
+        blockMainActions(false);
     }
 }
 
@@ -318,6 +332,154 @@ void MainWindow::on_actionConnect_triggered()
     {
         ui->treeView->setModel(DatabaseManager::instance()->prepareDatabaseModel(this));
         ui->treeView->show();
-        /// \todo
+    }
+}
+
+void MainWindow::on_treeView_activated(const QModelIndex &index)
+{
+    QStandardItem *item = static_cast<QStandardItemModel*>(ui->treeView->model())->itemFromIndex(index);
+    switch (item->type()) {
+    case SURVEY_TYPE:
+    {
+        Survey *survey = static_cast<Survey*>(item);
+        if(survey->image.empty())
+        {
+            if(DatabaseManager::instance()->loadSurveyWoundImage(survey))
+                blockMainActions(false);
+            else break;
+        }
+        ui->image->openImage(survey->image,survey->date.toString("dd.MM.yyyy hh:mm"));
+        break;
+    }
+//    case WOUND_TYPE:
+//        break;
+//    case PATIENT_TYPE:
+//        break;
+//    case DOCTOR_TYPE:
+//        break;
+    }
+}
+
+void MainWindow::on_treeView_clicked(const QModelIndex &index)
+{
+    QStandardItem *item = static_cast<QStandardItemModel*>(ui->treeView->model())->itemFromIndex(index);
+    blockDatabaseActions(false);
+    ui->databaseNameLineEdit->setReadOnly(false);
+    switch (item->type()) {
+    case SURVEY_TYPE:
+    {
+        Survey *survey = static_cast<Survey*>(item);
+        ui->databaseNameLineEdit->setText(survey->date.toString("dd.MM.yyyy hh:mm"));
+        ui->databaseNotesPlainTextEdit->setPlainText(survey->notes);
+        break;
+    }
+    case WOUND_TYPE:
+    {
+        Wound *wound = static_cast<Wound*>(item);
+        ui->databaseNameLineEdit->setText(wound->name);
+        ui->databaseNotesPlainTextEdit->setPlainText(wound->notes);
+        break;
+    }
+    case PATIENT_TYPE:
+    {
+        Patient *patient = static_cast<Patient*>(item);
+        ui->databaseNameLineEdit->setText(patient->name);
+        ui->databaseNotesPlainTextEdit->setPlainText(patient->notes);
+        break;
+    }
+    case DOCTOR_TYPE:
+    {
+        Doctor *doctor = static_cast<Doctor*>(item);
+        ui->databaseNameLineEdit->setText(doctor->name);
+        ui->databaseNameLineEdit->setReadOnly(true);
+        ui->actionDelete->setDisabled(true);
+        ui->databaseNotesPlainTextEdit->setPlainText(doctor->notes);
+        break;
+    }
+    }
+}
+
+void MainWindow::on_actionUpdate_triggered()
+{
+    QStandardItem *item = static_cast<QStandardItemModel*>(ui->treeView->model())->itemFromIndex(
+                ui->treeView->selectionModel()->currentIndex());
+    switch (item->type()) {
+    case SURVEY_TYPE:
+    {
+        QMessageBox confirmMsgBox;
+        confirmMsgBox.setText("Update survey");
+        confirmMsgBox.setInformativeText("Are You shure in updating of current survey?");
+        confirmMsgBox.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
+        confirmMsgBox.setIcon(QMessageBox::Warning);
+        int ret = confirmMsgBox.exec();
+        if(ret == QMessageBox::Yes)
+        {
+            Survey *typedItem = static_cast<Survey*>(item);
+            typedItem->date = QDateTime::fromString(ui->databaseNameLineEdit->text(), "dd.MM.yyyy hh:mm");
+            typedItem->setText(typedItem->date.toString("dd.MM.yyyy hh:mm"));
+            typedItem->notes = ui->databaseNotesPlainTextEdit->toPlainText();
+            typedItem->image = ImageManager::instance()->getImage().clone();
+            typedItem->woundArea = ui->lineEditArea->text().toDouble();
+            if(!DatabaseManager::instance()->update(typedItem))
+            {
+                QMessageBox msgBox;
+                msgBox.setText("Update failed");
+                msgBox.setStandardButtons(QMessageBox::Ok);
+                msgBox.setIcon(QMessageBox::Warning);
+                msgBox.exec();
+            }
+            ui->treeView->show();
+        }
+        break;
+    }
+    case WOUND_TYPE:
+    {
+        Wound *typedItem = static_cast<Wound*>(item);
+        typedItem->name = ui->databaseNameLineEdit->text();
+        typedItem->setText(typedItem->name);
+        typedItem->notes = ui->databaseNotesPlainTextEdit->toPlainText();
+        if(!DatabaseManager::instance()->update(typedItem))
+        {
+            QMessageBox msgBox;
+            msgBox.setText("Update failed");
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.exec();
+        }
+        ui->treeView->show();
+        break;
+    }
+    case PATIENT_TYPE:
+    {
+        Patient *typedItem = static_cast<Patient*>(item);
+        typedItem->name = ui->databaseNameLineEdit->text();
+        typedItem->setText(typedItem->name);
+        typedItem->notes = ui->databaseNotesPlainTextEdit->toPlainText();
+        if(!DatabaseManager::instance()->update(typedItem))
+        {
+            QMessageBox msgBox;
+            msgBox.setText("Update failed");
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.exec();
+        }
+        ui->treeView->show();
+        break;
+    }
+    case DOCTOR_TYPE: // Note that doctor's name can't be changed
+    {
+        Doctor *typedItem = static_cast<Doctor*>(item);
+        typedItem->notes = ui->databaseNotesPlainTextEdit->toPlainText();
+        if(!DatabaseManager::instance()->update(typedItem))
+        {
+            QMessageBox msgBox;
+            msgBox.setText("Update failed");
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.exec();
+        }
+        ui->treeView->show();
+        break;
+    }
     }
 }

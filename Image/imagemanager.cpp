@@ -203,11 +203,8 @@ const QImage ImageManager::getImageAsQImage() const
     return Mat2QImage(_blendLayers());
 }
 
-void ImageManager::openImage(QString fileName)
+void ImageManager::_onLoadImageCleanup()
 {
-    Log::StaticLogger::instance() << "[Image] opening " + fileName.toStdString() + "\n";
-
-    _myImage = cv::imread(fileName.toLocal8Bit().constData(), cv::IMREAD_COLOR);
     if(!_myImage.empty())
     {
         cleanDrawingLayer();
@@ -217,13 +214,27 @@ void ImageManager::openImage(QString fileName)
         rulerLength = 0;
         _myFilteredImage = _myImage.clone();
 
-        Log::StaticLogger::instance() << "[Image] image is opened\n";
+        Log::StaticLogger::instance() << "[Image] image is loaded\n";
     }
     else
-        Log::StaticLogger::instance() << "[Image] <FAIL> image is not opened\n";
+        Log::StaticLogger::instance() << "[Image] <FAIL> image is not loaded\n";
 }
 
-void ImageManager::saveImage(QString fileName) const
+void ImageManager::openImage(const cv::Mat &image)
+{
+    _myImage = image.clone();
+    _onLoadImageCleanup();
+
+}
+
+void ImageManager::openImage(const QString &fileName)
+{
+    Log::StaticLogger::instance() << "[Image] opening " + fileName.toStdString() + "\n";
+    _myImage = cv::imread(fileName.toLocal8Bit().constData(), cv::IMREAD_COLOR);
+    _onLoadImageCleanup();
+}
+
+void ImageManager::saveImage(const QString &fileName) const
 {
     Log::StaticLogger::instance() << "[Image] saving " + fileName.toStdString() + "\n";
 
@@ -235,7 +246,7 @@ void ImageManager::saveImage(QString fileName) const
         Log::StaticLogger::instance() << "[Image] <FAIL> image is not saved\n";
 }
 
-QImage ImageManager::Mat2QImage(cv::Mat const& src)
+QImage ImageManager::Mat2QImage(const cv::Mat &src)
 {
 //    QImage dest = QImage(
 //                (unsigned char*) src.data,

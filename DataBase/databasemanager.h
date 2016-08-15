@@ -46,6 +46,14 @@ class DatabaseManager : public QObject
 
     public : DatabaseModel *DBrep = nullptr;
     public : QStandardItemModel *prepareDatabaseModel(QObject *parent);
+    public : bool loadSurveyWoundImage(Survey *target);
+
+    private: bool _updateUtil(
+            const QString &param, const QString &name, const QString &notes, const int id) const;
+    public : bool update(Patient *target);
+    public : bool update(Wound *target);
+    public : bool update(Doctor *target);
+    public : bool update(Survey *target);
 
         /// Common constructor,
         /// parent not used

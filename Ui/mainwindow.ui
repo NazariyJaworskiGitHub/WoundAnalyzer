@@ -19,6 +19,12 @@
   <property name="windowTitle">
    <string>WoundAnalyzer</string>
   </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
+  <property name="documentMode">
+   <bool>false</bool>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <property name="spacing">
@@ -55,7 +61,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>245</width>
+         <width>239</width>
          <height>315</height>
         </rect>
        </property>
@@ -236,7 +242,10 @@
      <string>Database</string>
     </property>
     <addaction name="actionConnect"/>
-    <addaction name="actionRecord"/>
+    <addaction name="separator"/>
+    <addaction name="actionUpdate"/>
+    <addaction name="actionDelete"/>
+    <addaction name="actionAdd"/>
    </widget>
    <widget class="QMenu" name="menuImage">
     <property name="title">
@@ -262,8 +271,8 @@
     <addaction name="actionAbout"/>
     <addaction name="actionContext"/>
    </widget>
-   <addaction name="menuImage"/>
    <addaction name="menuDatabase"/>
+   <addaction name="menuImage"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -277,12 +286,11 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionConnect"/>
+   <addaction name="separator"/>
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
    <addaction name="actionExport_results"/>
-   <addaction name="separator"/>
-   <addaction name="actionConnect"/>
-   <addaction name="actionRecord"/>
    <addaction name="separator"/>
    <addaction name="actionPolygon"/>
    <addaction name="actionRuler"/>
@@ -317,7 +325,7 @@
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents_3">
+   <widget class="QWidget" name="toolsHolderContents">
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <property name="spacing">
       <number>6</number>
@@ -465,7 +473,7 @@
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
+   <widget class="QWidget" name="databaseHolderContents">
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <property name="spacing">
       <number>0</number>
@@ -484,12 +492,60 @@
      </property>
      <item>
       <widget class="QTreeView" name="treeView">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>2</verstretch>
+        </sizepolicy>
+       </property>
        <property name="editTriggers">
         <set>QAbstractItemView::NoEditTriggers</set>
        </property>
        <property name="headerHidden">
         <bool>true</bool>
        </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="databaseDataGroupBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="title">
+        <string>Info:</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <property name="leftMargin">
+         <number>2</number>
+        </property>
+        <property name="topMargin">
+         <number>2</number>
+        </property>
+        <property name="rightMargin">
+         <number>2</number>
+        </property>
+        <property name="bottomMargin">
+         <number>2</number>
+        </property>
+        <item>
+         <widget class="QLineEdit" name="databaseNameLineEdit"/>
+        </item>
+        <item>
+         <widget class="QPlainTextEdit" name="databaseNotesPlainTextEdit"/>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>
@@ -521,9 +577,6 @@
    <property name="toolTip">
     <string>Polygon</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+A</string>
-   </property>
   </action>
   <action name="actionClear">
    <property name="icon">
@@ -536,9 +589,6 @@
    <property name="toolTip">
     <string>Clear</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+D</string>
-   </property>
   </action>
   <action name="actionConnect">
    <property name="icon">
@@ -547,9 +597,6 @@
    </property>
    <property name="text">
     <string>Connect...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+B</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -584,9 +631,6 @@
    <property name="text">
     <string>Ruler</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+R</string>
-   </property>
   </action>
   <action name="actionSave">
    <property name="icon">
@@ -608,20 +652,17 @@
    <property name="text">
     <string>Settings</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+T</string>
-   </property>
   </action>
-  <action name="actionRecord">
+  <action name="actionUpdate">
    <property name="icon">
     <iconset>
      <normaloff>Icons/Edit.png</normaloff>Icons/Edit.png</iconset>
    </property>
    <property name="text">
-    <string>Record</string>
+    <string>Update</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+M</string>
+   <property name="toolTip">
+    <string>Update</string>
    </property>
   </action>
   <action name="actionZoom_In">
@@ -657,7 +698,25 @@
     <string>Export results...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+E</string>
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionDelete">
+   <property name="icon">
+    <iconset>
+     <normaloff>Icons/Delete.png</normaloff>Icons/Delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+  </action>
+  <action name="actionAdd">
+   <property name="icon">
+    <iconset>
+     <normaloff>Icons/Add.png</normaloff>Icons/Add.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add</string>
    </property>
   </action>
  </widget>

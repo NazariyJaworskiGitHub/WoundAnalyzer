@@ -11,6 +11,8 @@
 #include <QTextCursor>
 #include <QDesktopServices>
 #include <QDate>
+#include <QToolBar>
+#include <QDockWidget>
 
 #include "Ui/imageinterface.h"
 #include "Ui/settingswidget.h"
@@ -34,6 +36,7 @@ private:
     QLabel *_mousePosition = nullptr;
     QLabel *_managementMode = nullptr;
     QLabel *_rulerDistance = nullptr;
+    QToolBar *_DBToolbar = nullptr;
     Ui::MainWindow *ui;
 
     QString _imageFileName;
@@ -44,7 +47,8 @@ private Q_SLOTS:
     void updatePolygonArea(double area);
     void updateRulerDistance(double distance);
     void updateImageFileNameAndResetZoom(QString fileName);
-    void blockInterface(bool b);
+    void blockMainActions(bool b);
+    void blockDatabaseActions(bool b);
     void on_actionOpen_triggered();
     void on_actionPolygon_toggled(bool arg1);
     void on_actionClear_triggered();
@@ -65,6 +69,9 @@ private Q_SLOTS:
     void on_spinBox_valueChanged(int arg1);
     void on_doubleSpinBox_3_valueChanged(double arg1);
     void on_actionConnect_triggered();
+    void on_treeView_activated(const QModelIndex &index);
+    void on_treeView_clicked(const QModelIndex &index);
+    void on_actionUpdate_triggered();
 };
 
 #endif // MAINWINDOW_H

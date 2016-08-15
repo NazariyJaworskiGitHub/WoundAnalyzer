@@ -115,7 +115,7 @@ QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
     {
         QSqlQuery doctorsQuery(QSqlDatabase::database(DATABASENAME));
         Log::StaticLogger::instance() << "[Database] searching id of " + QSqlDatabase::database(DATABASENAME).userName().toStdString() + "\n";
-        str = "SELECT * FROM Doctors WHERE DoctorName = '" + QSqlDatabase::database(DATABASENAME).userName() + "'";
+        str = "SELECT ID, Notes FROM Doctors WHERE DoctorName = '" + QSqlDatabase::database(DATABASENAME).userName() + "'";
         if(doctorsQuery.exec(str))
             Log::StaticLogger::instance() << "[Database] id found\n";
         else
@@ -128,13 +128,14 @@ QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
         DBrep->addDoctor(new Doctor(
                              doctorIcon,
                              QSqlDatabase::database(DATABASENAME).userName(),
-                             doctorsQuery.value(record.indexOf("ID")).toInt()));
+                             doctorsQuery.value(record.indexOf("ID")).toInt(),
+                             doctorsQuery.value(record.indexOf("Notes")).toString()));
     }
     //////////////////////////////////////////////////////////////////////////////////////
     {
         QSqlQuery patientsQuery(QSqlDatabase::database(DATABASENAME));
         Log::StaticLogger::instance() << "[Database] loading patients of " + QSqlDatabase::database(DATABASENAME).userName().toStdString() + "\n";
-        str = "SELECT * FROM Patients WHERE DoctorID = " + QString::number(DBrep->doctor->DoctorID);
+        str = "SELECT ID, PatientName, Notes FROM Patients WHERE DoctorID = " + QString::number(DBrep->doctor->id);
         if(patientsQuery.exec(str))
             Log::StaticLogger::instance() << "[Database] patients are loaded\n";
         else
@@ -148,14 +149,15 @@ QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
             Patient * patient = new Patient(
                         patientIcon,
                         patientsQuery.value(record.indexOf("PatientName")).toString(),
-                        patientsQuery.value(record.indexOf("ID")).toInt());
+                        patientsQuery.value(record.indexOf("ID")).toInt(),
+                        patientsQuery.value(record.indexOf("Notes")).toString());
             DBrep->doctor->addPatient(patient);
 
             ///////////////////////////////////////////////////////////////////////////////
             {
                 QSqlQuery woundsQuery(QSqlDatabase::database(DATABASENAME));
-                Log::StaticLogger::instance() << "[Database] loading wounds of " + patient->PatientName.toStdString() + "\n";
-                str = "SELECT * FROM Wounds WHERE PatientID = " + QString::number(patient->PatientID);
+                Log::StaticLogger::instance() << "[Database] loading wounds of " + patient->name.toStdString() + "\n";
+                str = "SELECT ID, WoundName, Notes FROM Wounds WHERE PatientID = " + QString::number(patient->id);
                 if(woundsQuery.exec(str))
                     Log::StaticLogger::instance() << "[Database] wounds are loaded\n";
                 else
@@ -175,8 +177,8 @@ QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
                     ///////////////////////////////////////////////////////////////////////
                     {
                         QSqlQuery surveyQuery(QSqlDatabase::database(DATABASENAME));
-                        Log::StaticLogger::instance() << "[Database] loading surveys of " + wound->WoundName.toStdString() + "\n";
-                        str = "SELECT * FROM Surveys WHERE WoundID = " + QString::number(wound->WoundID);
+                        Log::StaticLogger::instance() << "[Database] loading surveys of " + wound->name.toStdString() + "\n";
+                        str = "SELECT ID, SurveyDate, Notes FROM Surveys WHERE WoundID = " + QString::number(wound->id);
                         if(surveyQuery.exec(str))
                             Log::StaticLogger::instance() << "[Database] surveys are loaded\n";
                         else
@@ -204,6 +206,101 @@ QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
     ///////////////////////////////////////////////////////////////////////////////////////
 
     return DBrep->model;
+}
+
+bool DatabaseManager::loadSurveyWoundImage(Survey *target)
+{
+    QSqlRecord record;
+    QString str;
+    QSqlQuery query(QSqlDatabase::database(DATABASENAME));
+    Log::StaticLogger::instance() << "[Database] loading survey wound image of " + target->date.toString("dd.MM.yyyy hh:mm").toStdString() + "\n";
+    str = "SELECT Image, Polygons, RulerPoints, RulerFactor, WoundArea FROM Surveys WHERE ID = " + QString::number(target->id);
+    if(query.exec(str))
+        Log::StaticLogger::instance() << "[Database] survey wound image is loaded\n";
+    else
+    {
+        Log::StaticLogger::instance() << "[Database] <FAIL> " + query.lastError().text().toStdString() + "\n";
+        return false;
+    }
+    query.next();
+    record = query.record();
+    QByteArray byteArray1 = query.value(record.indexOf("Image")).toByteArray();
+    if(!byteArray1.isEmpty())
+    {
+        std::vector<char> v(byteArray1.data(), byteArray1.data() + byteArray1.length());
+        target->image = cv::imdecode(v, cv::IMREAD_COLOR);
+    }
+    else
+    {
+        Log::StaticLogger::instance() << "[Database] <FAIL> survey wound image is empty\n";
+        return false;
+    }
+    QByteArray byteArray2 = query.value(record.indexOf("Polygons")).toByteArray();
+    if(!byteArray2.isEmpty())
+        target->polygons = static_cast<QVector<QPolygonF>>(byteArray2.toInt());
+    QByteArray byteArray3 = query.value(record.indexOf("RulerPoints")).toByteArray();
+    if(!byteArray3.isEmpty())
+        target->rulerPoints = static_cast<QPolygonF>(byteArray3.toInt());
+    target->rulerFactor = query.value(record.indexOf("RulerFactor")).toDouble();
+    target->woundArea = query.value(record.indexOf("WoundArea")).toDouble();
+    return true;
+}
+
+bool DatabaseManager::_updateUtil(const QString &param, const QString &name, const QString &notes, const int id) const
+{
+    QSqlQuery query(QSqlDatabase::database(DATABASENAME));
+    Log::StaticLogger::instance() << "[Database] updating " + param.toStdString() + " " + name.toStdString() + "\n";
+    query.prepare("UPDATE "+ param + "s SET " + param + "Name = '" + name +
+                  "', Notes = :notes WHERE ID = " + QString::number(id));
+    query.bindValue(":notes", notes);
+    if(query.exec())
+        Log::StaticLogger::instance() << "[Database] " + param.toStdString() + " is updated \n";
+    else
+    {
+        Log::StaticLogger::instance() << "[Database] <FAIL> " + query.lastError().text().toStdString() + "\n";
+        return false;
+    }
+    return true;
+}
+
+bool DatabaseManager::update(Patient *target)
+{
+    return _updateUtil("patient", target->name, target->notes, target->id);
+}
+
+bool DatabaseManager::update(Wound *target)
+{
+    return _updateUtil("wound", target->name, target->notes, target->id);
+}
+
+bool DatabaseManager::update(Doctor *target)
+{
+    return _updateUtil("doctor", target->name, target->notes, target->id);
+}
+
+bool DatabaseManager::update(Survey *target)
+{
+    QSqlQuery query(QSqlDatabase::database(DATABASENAME));
+    Log::StaticLogger::instance() << "[Database] updating survey " + target->date.toString("dd.MM.yyyy hh:mm").toStdString() + "\n";
+    std::vector<unsigned char> v;
+    cv::imencode(".jpg", target->image, v);
+    query.prepare("UPDATE Surveys SET SurveyDate = '" + target->date.toString("yyyy-MM-dd hh:mm:ss") +
+            "', Notes = '" + target->notes +
+            "', Image = :imageData" +
+//            "', Polygons = '" + target->polygons +
+//            "', RulerPoints = '" + target->rulerPoints +
+//            "', RulerFactor = '" + QString::number(target->rulerFactor) +
+            ", WoundArea = '" + QString::number(target->woundArea) +
+            "' WHERE ID = " + QString::number(target->id));
+    query.bindValue( ":imageData", QByteArray(reinterpret_cast<const char*>(v.data()),v.size()));
+    if(query.exec())
+        Log::StaticLogger::instance() << "[Database] survey is updated \n";
+    else
+    {
+        Log::StaticLogger::instance() << "[Database] <FAIL> " + query.lastError().text().toStdString() + "\n";
+        return false;
+    }
+    return true;
 }
 
 QSqlError DatabaseManager::lastError() const
