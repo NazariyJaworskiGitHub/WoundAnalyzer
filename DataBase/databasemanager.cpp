@@ -178,7 +178,7 @@ QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
                     {
                         QSqlQuery surveyQuery(QSqlDatabase::database(DATABASENAME));
                         Log::StaticLogger::instance() << "[Database] loading surveys of " + wound->name.toStdString() + "\n";
-                        str = "SELECT ID, SurveyDate, Notes FROM Surveys WHERE WoundID = " + QString::number(wound->id);
+                        str = "SELECT ID, SurveyDate, Notes, WoundArea FROM Surveys WHERE WoundID = " + QString::number(wound->id);
                         if(surveyQuery.exec(str))
                             Log::StaticLogger::instance() << "[Database] surveys are loaded\n";
                         else
@@ -193,7 +193,8 @@ QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
                                         surveyIcon,
                                         surveyQuery.value(record.indexOf("SurveyDate")).toDateTime(),
                                         surveyQuery.value(record.indexOf("ID")).toInt(),
-                                        surveyQuery.value(record.indexOf("Notes")).toString());
+                                        surveyQuery.value(record.indexOf("Notes")).toString(),
+                                        surveyQuery.value(record.indexOf("WoundArea")).toDouble());
                             wound->addSurvey(survey);
                         }
                     }
@@ -214,7 +215,7 @@ bool DatabaseManager::loadSurveyWoundImage(Survey *target)
     QString str;
     QSqlQuery query(QSqlDatabase::database(DATABASENAME));
     Log::StaticLogger::instance() << "[Database] loading survey wound image of " + target->date.toString("dd.MM.yyyy hh:mm").toStdString() + "\n";
-    str = "SELECT Image, Polygons, RulerPoints, RulerFactor, WoundArea FROM Surveys WHERE ID = " + QString::number(target->id);
+    str = "SELECT Image, Polygons, RulerPoints, RulerFactor FROM Surveys WHERE ID = " + QString::number(target->id);
     if(query.exec(str))
         Log::StaticLogger::instance() << "[Database] survey wound image is loaded\n";
     else
@@ -235,14 +236,9 @@ bool DatabaseManager::loadSurveyWoundImage(Survey *target)
         Log::StaticLogger::instance() << "[Database] <FAIL> survey wound image is empty\n";
         return false;
     }
-    QByteArray byteArray2 = query.value(record.indexOf("Polygons")).toByteArray();
-    if(!byteArray2.isEmpty())
-        target->polygons = static_cast<QVector<QPolygonF>>(byteArray2.toInt());
-    QByteArray byteArray3 = query.value(record.indexOf("RulerPoints")).toByteArray();
-    if(!byteArray3.isEmpty())
-        target->rulerPoints = static_cast<QPolygonF>(byteArray3.toInt());
+    target->unpackPolygons(query.value(record.indexOf("Polygons")).toByteArray());
+    target->unpackRulerPoints(query.value(record.indexOf("RulerPoints")).toByteArray());
     target->rulerFactor = query.value(record.indexOf("RulerFactor")).toDouble();
-    target->woundArea = query.value(record.indexOf("WoundArea")).toDouble();
     return true;
 }
 
@@ -284,15 +280,20 @@ bool DatabaseManager::update(Survey *target)
     Log::StaticLogger::instance() << "[Database] updating survey " + target->date.toString("dd.MM.yyyy hh:mm").toStdString() + "\n";
     std::vector<unsigned char> v;
     cv::imencode(".jpg", target->image, v);
-    query.prepare("UPDATE Surveys SET SurveyDate = '" + target->date.toString("yyyy-MM-dd hh:mm:ss") +
-            "', Notes = '" + target->notes +
-            "', Image = :imageData" +
-//            "', Polygons = '" + target->polygons +
-//            "', RulerPoints = '" + target->rulerPoints +
-//            "', RulerFactor = '" + QString::number(target->rulerFactor) +
-            ", WoundArea = '" + QString::number(target->woundArea) +
-            "' WHERE ID = " + QString::number(target->id));
-    query.bindValue( ":imageData", QByteArray(reinterpret_cast<const char*>(v.data()),v.size()));
+    query.prepare(
+            "UPDATE Surveys SET "
+            "SurveyDate = '" + target->date.toString("yyyy-MM-dd hh:mm:ss") + "', "
+            "Notes = :notes, "
+            "Image = :imageData, "
+            "Polygons = :polygonsData, "
+            "RulerPoints = :rulerPoints, "
+            "RulerFactor = " + QString::number(target->rulerFactor) + ", "
+            "WoundArea = " + QString::number(target->woundArea) + " "
+            "WHERE ID = " + QString::number(target->id));
+    query.bindValue(":notes", target->notes);
+    query.bindValue(":imageData", QByteArray(reinterpret_cast<const char*>(v.data()),v.size()));
+    query.bindValue(":polygonsData", target->packPolygons());
+    query.bindValue(":rulerPoints", target->packRulerPoints());
     if(query.exec())
         Log::StaticLogger::instance() << "[Database] survey is updated \n";
     else

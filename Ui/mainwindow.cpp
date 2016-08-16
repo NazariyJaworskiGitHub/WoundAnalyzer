@@ -348,15 +348,17 @@ void MainWindow::on_treeView_activated(const QModelIndex &index)
                 blockMainActions(false);
             else break;
         }
+
+
         ui->image->openImage(survey->image,survey->date.toString("dd.MM.yyyy hh:mm"));
+        ui->image->applyPolygonsAndRulerPoints(
+                    survey->polygons,
+                    survey->rulerPoints);
+        ui->rulerFactorDoubleSpinBox->setValue(survey->rulerFactor);
+        ImageManager::instance()->rulerFactor = survey->rulerFactor;
+        ui->image->drawAll();
         break;
     }
-//    case WOUND_TYPE:
-//        break;
-//    case PATIENT_TYPE:
-//        break;
-//    case DOCTOR_TYPE:
-//        break;
     }
 }
 
@@ -416,10 +418,14 @@ void MainWindow::on_actionUpdate_triggered()
         {
             Survey *typedItem = static_cast<Survey*>(item);
             typedItem->date = QDateTime::fromString(ui->databaseNameLineEdit->text(), "dd.MM.yyyy hh:mm");
-            typedItem->setText(typedItem->date.toString("dd.MM.yyyy hh:mm"));
+            typedItem->setText(typedItem->date.toString("dd.MM.yyyy hh:mm")+ " " + QString::number(ui->image->woundsArea) + "sm2");
             typedItem->notes = ui->databaseNotesPlainTextEdit->toPlainText();
             typedItem->image = ImageManager::instance()->getImage().clone();
-            typedItem->woundArea = ui->lineEditArea->text().toDouble();
+            typedItem->applyPolygonsAndRulerPoints(
+                        ui->image->polygons,
+                        ui->image->rulerPoints);
+            typedItem->rulerFactor = ui->rulerFactorDoubleSpinBox->value();
+            typedItem->woundArea = ui->image->woundsArea;
             if(!DatabaseManager::instance()->update(typedItem))
             {
                 QMessageBox msgBox;

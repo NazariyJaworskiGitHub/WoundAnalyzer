@@ -23,10 +23,22 @@ void ImageInterface::openImage(QString fileName)
     clearAll();
 }
 
+void ImageInterface::applyPolygonsAndRulerPoints(
+        const QVector<QPolygonF> &p,
+        const QPolygonF &r)
+{
+    /// use only with openImage(const cv::Mat &image, const QString &title)
+    /// because of clearAll()
+    polygons.resize(p.size());
+    for(int i=0 ; i < polygons.size(); ++i)
+        polygons[i] = p[i];
+    rulerPoints = r;
+}
+
 QPointF *ImageInterface::_findNodeWithPosInPolygons(const QPointF &pos)
 {
     QPointF *ptr = nullptr;
-    for(QPolygonF *p = _polygons.begin(); p!= _polygons.end(); ++p)
+    for(QPolygonF *p = polygons.begin(); p!= polygons.end(); ++p)
     {
         bool found = false;
         for(QPointF *n = p->begin(); n!= p->end(); ++n)
@@ -47,17 +59,17 @@ QPointF *ImageInterface::_findNodeWithPosInRuler(const QPointF &pos)
 {
     QPointF *ptr = nullptr;
     // note that node has radius thickness + 2
-    if(_rulerPoints.size() == 1)
+    if(rulerPoints.size() == 1)
     {
-        if(MathUtilities::length(_rulerPoints[0],pos) < rulerThickness+3)
-            ptr = &_rulerPoints[0];
+        if(MathUtilities::length(rulerPoints[0],pos) < rulerThickness+3)
+            ptr = &rulerPoints[0];
     }
-    else if(_rulerPoints.size() > 1)
+    else if(rulerPoints.size() > 1)
     {
-        if(MathUtilities::length(_rulerPoints[0],pos) < rulerThickness+3)
-            ptr = &_rulerPoints[0];
-        else if(MathUtilities::length(_rulerPoints[1],pos) < rulerThickness+3)
-            ptr = &_rulerPoints[1];
+        if(MathUtilities::length(rulerPoints[0],pos) < rulerThickness+3)
+            ptr = &rulerPoints[0];
+        else if(MathUtilities::length(rulerPoints[1],pos) < rulerThickness+3)
+            ptr = &rulerPoints[1];
     }
     return ptr;
 }
@@ -68,7 +80,7 @@ bool ImageInterface::_findLineWithPosInPolygons(
         const QPointF &pos)
 {
     bool found = false;
-    for(QPolygonF *p = _polygons.begin(); p!= _polygons.end(); ++p)
+    for(QPolygonF *p = polygons.begin(); p!= polygons.end(); ++p)
     {
         if(p->size()>1)
         {
@@ -111,9 +123,10 @@ bool ImageInterface::_findLineWithPosInPolygons(
 
 void ImageInterface::clearAll()
 {
-    for(QPolygonF *p = _polygons.begin(); p!= _polygons.end(); ++p)
+    for(QPolygonF *p = polygons.begin(); p!= polygons.end(); ++p)
         p->clear();
-    _rulerPoints.clear();
+    polygons.clear();
+    rulerPoints.clear();
     ImageManager::instance()->rulerFactor = 1.0;
     ImageManager::instance()->rulerLength = 0;
     drawAll();
@@ -126,21 +139,21 @@ void ImageInterface::drawAll()
     ImageManager::instance()->cleanDrawingLayer();
 
     Q_EMIT updateRulerDistance_signal(ImageManager::instance()->drawRuler(
-                                          _rulerPoints,
+                                          rulerPoints,
                                           rulerColor,
                                           rulerNodesColor,
                                           rulerTextColor,
                                           rulerThickness));
 
-    double area = 0;
-    for(auto p: _polygons)
-        area += ImageManager::instance()->drawPolygon(
+    woundsArea = 0;
+    for(auto p: polygons)
+        woundsArea += ImageManager::instance()->drawPolygon(
                     p,
                     polygonEdgeColor,
                     polygonColor,
                     polygonTextColor,
                     polygonEdgeThickness);
-    Q_EMIT updatePolygonArea_signal(area);
+    Q_EMIT updatePolygonArea_signal(woundsArea);
 
     if(_nodeToHighlight)
     {
@@ -170,10 +183,10 @@ void ImageInterface::drawAll()
 
 void ImageInterface::zoom(double delta)
 {
-    for(QPolygonF *p = _polygons.begin(); p!= _polygons.end(); ++p)
+    for(QPolygonF *p = polygons.begin(); p!= polygons.end(); ++p)
         for(QPointF *n = p->begin(); n!= p->end(); ++n)
             *n *= 1.0 + delta / ImageManager::instance()->zoomFactor;
-    for(QPointF *n = _rulerPoints.begin(); n!= _rulerPoints.end(); ++n)
+    for(QPointF *n = rulerPoints.begin(); n!= rulerPoints.end(); ++n)
         *n *= 1.0 + delta / ImageManager::instance()->zoomFactor;
 
     ImageManager::instance()->zoomFactor += delta;
@@ -250,22 +263,22 @@ void ImageInterface::mousePressEvent(QMouseEvent *ev)
                     createNewPolygon = false;
                     QPolygon p;
                     p.append(ev->pos());
-                    _polygons.append(p);
+                    polygons.append(p);
                 }
                 else
-                    _polygons.last().append(ev->pos());
+                    polygons.last().append(ev->pos());
                 drawAll();
             }
             else if(_managementMode == RULER_MODE)
             {
-                if(_rulerPoints.size() == 0)
-                    _rulerPoints.append(ev->pos());
-                else if(_rulerPoints.size() == 1)
-                    _rulerPoints.append(ev->pos());
-                else if(_rulerPoints.size() == 2)
+                if(rulerPoints.size() == 0)
+                    rulerPoints.append(ev->pos());
+                else if(rulerPoints.size() == 1)
+                    rulerPoints.append(ev->pos());
+                else if(rulerPoints.size() == 2)
                 {
-                    _rulerPoints[0] = _rulerPoints[1];
-                    _rulerPoints[1] = ev->pos();
+                    rulerPoints[0] = rulerPoints[1];
+                    rulerPoints[1] = ev->pos();
                 }
                 drawAll();
             }
@@ -333,5 +346,8 @@ void ImageInterface::dropEvent(QDropEvent *ev)
 
 ImageInterface::~ImageInterface()
 {
-    _polygons.clear();
+    for(QPolygonF *p = polygons.begin(); p!= polygons.end(); ++p)
+        p->clear();
+    polygons.clear();
+    rulerPoints.clear();
 }

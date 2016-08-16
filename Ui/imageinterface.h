@@ -38,9 +38,14 @@ class ImageInterface : public QLabel
     public : QColor rulerTextColor              = QColor(  0, 255, 255);
     public : int    rulerThickness              = 1;
 
-    private: QVector<QPolygonF> _polygons;
+    public : double woundsArea;
+
+    public : void applyPolygonsAndRulerPoints(
+            const QVector<QPolygonF> &p,
+            const QPolygonF &r);
+    public : QVector<QPolygonF> polygons;
     public : bool createNewPolygon = true;
-    private: QPolygonF _rulerPoints;             /// \todo make it QLine
+    public : QPolygonF rulerPoints;
 
     private: QPointF *_nodeToMove = nullptr;
 

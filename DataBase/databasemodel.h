@@ -16,20 +16,137 @@
 
 class Survey : public QStandardItem
 {
-    public : Survey(const QIcon &icon, const QDateTime &date, int ID, const QString &notes):
-        QStandardItem(icon, date.toString("dd.MM.yyyy hh:mm")),
+    public : Survey(const QIcon &icon, const QDateTime &date, int ID, const QString &notes, const double woundArea):
+        QStandardItem(icon, date.toString("dd.MM.yyyy hh:mm") + " " + QString::number(woundArea) + "sm2" ),
         id(ID),
         date(date),
-        notes(notes){}
+        notes(notes),
+        woundArea(woundArea){}
     public : int id;
     public : QDateTime date;
     public : QString notes;
     public : cv::Mat image;
 
     public : QVector<QPolygonF> polygons;
+    public : QByteArray packPolygons() const
+    {
+        QByteArray arr;
+        char intSize = sizeof(int);
+        arr.append(&intSize, 1);                            // size of int
+        char qrealSize = sizeof(qreal);
+        arr.append(&qrealSize, 1);                          // size of double
+        int count = polygons.size();
+        arr.append((char*)&count, sizeof(int));             // number of polygons <int>
+        for(QPolygonF p: polygons)
+        {
+            int countP = p.size();
+            arr.append((char*)&countP, sizeof(int));        // number of nodes in polygons <int>
+        }
+        for(QPolygonF p: polygons)
+            for(QPointF n: p)
+            {
+                qreal x = n.x();
+                qreal y = n.y();
+                arr.append((char*)&x, sizeof(qreal));       // nodes of polygons <double>
+                arr.append((char*)&y, sizeof(qreal));
+            }
+        return arr;
+    }
+    public : void unpackPolygons(QByteArray buf)
+    {
+        for(QPolygonF *p = polygons.begin(); p!= polygons.end(); ++p)
+            p->clear();
+        polygons.clear();
+        if(!buf.isEmpty())
+        {
+            char * ptr = buf.data();
+            size_t intSize = *ptr;
+            ptr += sizeof(char);
+            size_t qrealSize = *ptr;
+            ptr += sizeof(char);
+            int polygonsCount = *(int*)(ptr);
+            ptr += intSize;
+            polygons.resize(polygonsCount);
+            for(QPolygonF *p = polygons.begin(); p!= polygons.end(); ++p)
+            {
+                int nodesCount = *(int*)(ptr);
+                ptr += intSize;
+                p->resize(nodesCount);
+            }
+            for(QPolygonF *p = polygons.begin(); p!= polygons.end(); ++p)
+                for(QPointF *n = p->begin(); n!= p->end(); ++n)
+                {
+                    n->setX(*(qreal*)(ptr));
+                    ptr += qrealSize;
+                    n->setY(*(qreal*)(ptr));
+                    ptr += qrealSize;
+                }
+        }
+    }
     public : QPolygonF rulerPoints;
+    public : QByteArray packRulerPoints() const
+    {
+        QByteArray arr;
+        char intSize = sizeof(int);
+        arr.append(&intSize, 1);                            // size of int
+        char qrealSize = sizeof(qreal);
+        arr.append(&qrealSize, 1);                          // size of double
+        int count = rulerPoints.size();
+        arr.append((char*)&count, sizeof(int));             // number of nodes <int>
+        for(QPointF n: rulerPoints)
+        {
+            qreal x = n.x();
+            qreal y = n.y();
+            arr.append((char*)&x, sizeof(qreal));           // nodes of polygon <double>
+            arr.append((char*)&y, sizeof(qreal));
+        }
+        return arr;
+    }
+    public : void unpackRulerPoints(QByteArray buf)
+    {
+        rulerPoints.clear();
+        if(!buf.isEmpty())
+        {
+            char * ptr = buf.data();
+            size_t intSize = *ptr;
+            ptr += sizeof(char);
+            size_t qrealSize = *ptr;
+            ptr += sizeof(char);
+            int nodesCount = *(int*)(ptr);
+            ptr += intSize;
+            rulerPoints.resize(nodesCount);
+            for(QPointF *n = rulerPoints.begin(); n!= rulerPoints.end(); ++n)
+            {
+                n->setX(*(qreal*)(ptr));
+                ptr += qrealSize;
+                n->setY(*(qreal*)(ptr));
+                ptr += qrealSize;
+            }
+        }
+    }
+    public : void applyPolygonsAndRulerPoints(
+            const QVector<QPolygonF> &p,
+            const QPolygonF &r)
+    {
+        for(QPolygonF *_p = polygons.begin(); _p!= polygons.end(); ++_p)
+            _p->clear();
+        polygons.clear();
+        rulerPoints.clear();
+
+        polygons.resize(p.size());
+        for(int i=0 ; i < polygons.size(); ++i)
+            polygons[i] = p[i];
+        rulerPoints = r;
+    }
     public : double rulerFactor;
     public : double woundArea;
+    public :~Survey()
+    {
+        for(QPolygonF *p = polygons.begin(); p!= polygons.end(); ++p)
+            p->clear();
+        polygons.clear();
+        rulerPoints.clear();
+    }
 
     public : int type() const override { return SURVEY_TYPE;}
 };
