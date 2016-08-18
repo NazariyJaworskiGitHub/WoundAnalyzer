@@ -5,6 +5,7 @@
 #include <QPolygonF>
 #include <QStandardItem>
 #include <QStandardItemModel>
+#include <QIcon>
 #include <opencv2/opencv.hpp>
 
 // \todo find out that you really need to duplicate those pointers with vectors
@@ -17,7 +18,7 @@
 class Survey : public QStandardItem
 {
     public : Survey(const QIcon &icon, const QDateTime &date, int ID, const QString &notes, const double woundArea):
-        QStandardItem(icon, date.toString("dd.MM.yyyy hh:mm") + " " + QString::number(woundArea) + "sm2" ),
+        QStandardItem(icon, date.toString("dd.MM.yyyy hh:mm") + " " + ((woundArea != 0) ? (QString::number(woundArea) + "sm2") : (""))),
         id(ID),
         date(date),
         notes(notes),
@@ -138,7 +139,7 @@ class Survey : public QStandardItem
             polygons[i] = p[i];
         rulerPoints = r;
     }
-    public : double rulerFactor;
+    public : double rulerFactor = 1.0;
     public : double woundArea;
     public :~Survey()
     {
@@ -161,12 +162,6 @@ class Wound : public QStandardItem
     public : int id;
     public : QString name;
     public : QString notes;
-    public : QVector<Survey*> surveys;
-    public : void addSurvey(Survey* newSurvey)
-    {
-        this->appendRow(newSurvey);
-        this->surveys.append(newSurvey);
-    }
     public : int type() const override { return WOUND_TYPE;}
 };
 
@@ -180,12 +175,6 @@ class Patient : public QStandardItem
     public : int id;
     public : QString name;
     public : QString notes;
-    public : QVector<Wound*> wounds;
-    public : void addWound(Wound* newWound)
-    {
-        this->appendRow(newWound);
-        this->wounds.append(newWound);
-    }
     public : int type() const override { return PATIENT_TYPE;}
 };
 
@@ -199,12 +188,6 @@ class Doctor : public QStandardItem
     public : int id;
     public : QString name;
     public : QString notes;
-    public : QVector<Patient*> patients;
-    public : void addPatient(Patient* newPatient)
-    {
-        this->appendRow(newPatient);
-        this->patients.append(newPatient);
-    }
     public : int type() const override { return DOCTOR_TYPE;}
 };
 
@@ -212,6 +195,11 @@ class DatabaseModel
 {
     public : QStandardItemModel * model = nullptr;
     public : Doctor* doctor = nullptr;
+
+    public : QIcon patientIcon = QIcon(QStringLiteral(":Ui/Icons/Patient.png"));
+    public : QIcon doctorIcon = QIcon(QStringLiteral(":Ui/Icons/Doctor.png"));
+    public : QIcon woundIcon = QIcon(QStringLiteral(":Ui/Icons/Wound.png"));
+    public : QIcon surveyIcon = QIcon(QStringLiteral(":Ui/Icons/Survey.png"));
 
     public : DatabaseModel(QObject * parent = 0): model(new QStandardItemModel(parent)){}
     public : void addDoctor(Doctor* newDoctor)

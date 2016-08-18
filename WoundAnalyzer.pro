@@ -57,20 +57,5 @@ FORMS    += Ui/mainwindow.ui \
     Ui/databaseconnectionedititemwidget.ui \
     Ui/settingswidget.ui
 
-DISTFILES += \
-    Ui/Icons/Database.png \
-    Ui/Icons/Edit.png \
-    Ui/Icons/Open.png \
-    Ui/Icons/Polygon.png \
-    Ui/Icons/Configure.png \
-    Ui/Icons/Help.png \
-    Ui/Icons/Clear.png \
-    Ui/Icons/About.png \
-    Ui/Icons/Ruler.png \
-    Ui/Icons/Save.png \
-    Ui/Icons/Zoom-In.png \
-    Ui/Icons/Zoom-Out.png \
-    Ui/Icons/ZoomSmall.png \
-    Ui/Icons/Transparency.png \
-    Ui/Icons/Export.png \
-    Ui/Icons/Add.png
+RESOURCES += \
+    woundanalyzer.qrc

@@ -12,6 +12,7 @@ ImageInterface::ImageInterface(QWidget *parent):
 void ImageInterface::openImage(const cv::Mat &image, const QString &title)
 {
     ImageManager::instance()->openImage(image);
+    setManagementMode(EDIT_MODE);
     Q_EMIT updateFilenameAndResetZoom_signal(title);
     clearAll();
 }
@@ -19,6 +20,7 @@ void ImageInterface::openImage(const cv::Mat &image, const QString &title)
 void ImageInterface::openImage(QString fileName)
 {
     ImageManager::instance()->openImage(fileName);
+    setManagementMode(EDIT_MODE);
     Q_EMIT updateFilenameAndResetZoom_signal(fileName);
     clearAll();
 }
@@ -131,19 +133,18 @@ void ImageInterface::clearAll()
     ImageManager::instance()->rulerLength = 0;
     drawAll();
     Q_EMIT updatePolygonArea_signal(0);
-    Q_EMIT updateRulerDistance_signal(0);
 }
 
 void ImageInterface::drawAll()
 {
     ImageManager::instance()->cleanDrawingLayer();
 
-    Q_EMIT updateRulerDistance_signal(ImageManager::instance()->drawRuler(
+    rulerDistance = ImageManager::instance()->drawRuler(
                                           rulerPoints,
                                           rulerColor,
                                           rulerNodesColor,
                                           rulerTextColor,
-                                          rulerThickness));
+                                          rulerThickness);
 
     woundsArea = 0;
     for(auto p: polygons)

@@ -1,0 +1,26 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Ui/Icons/About.png</file>
+        <file>Ui/Icons/Add.png</file>
+        <file>Ui/Icons/Clear.png</file>
+        <file>Ui/Icons/Configure.png</file>
+        <file>Ui/Icons/Database.png</file>
+        <file>Ui/Icons/Delete.png</file>
+        <file>Ui/Icons/Doctor.png</file>
+        <file>Ui/Icons/Edit.png</file>
+        <file>Ui/Icons/Export.png</file>
+        <file>Ui/Icons/Help.png</file>
+        <file>Ui/Icons/MainIcon.png</file>
+        <file>Ui/Icons/Open.png</file>
+        <file>Ui/Icons/Patient.png</file>
+        <file>Ui/Icons/Polygon.png</file>
+        <file>Ui/Icons/Ruler.png</file>
+        <file>Ui/Icons/Save.png</file>
+        <file>Ui/Icons/Survey.png</file>
+        <file>Ui/Icons/Transparency.png</file>
+        <file>Ui/Icons/Wound.png</file>
+        <file>Ui/Icons/Zoom-In.png</file>
+        <file>Ui/Icons/Zoom-Out.png</file>
+        <file>Ui/Icons/ZoomSmall.png</file>
+    </qresource>
+</RCC>

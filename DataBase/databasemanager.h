@@ -55,6 +55,14 @@ class DatabaseManager : public QObject
     public : bool update(Doctor *target);
     public : bool update(Survey *target);
 
+    public : Patient *add(Doctor  *parent);
+    public : Wound   *add(Patient *parent);
+    public : Survey  *add(Wound   *parent);
+
+    public : Wound   *del(Survey *target);
+    public : Patient *del(Wound *target);
+    public : Doctor  *del(Patient *target);
+
         /// Common constructor,
         /// parent not used
     private: DatabaseManager(QObject *parent = nullptr);

@@ -19,6 +19,10 @@
   <property name="windowTitle">
    <string>WoundAnalyzer</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../woundanalyzer.qrc">
+    <normaloff>:/Ui/Icons/MainIcon.png</normaloff>:/Ui/Icons/MainIcon.png</iconset>
+  </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonIconOnly</enum>
   </property>
@@ -136,7 +140,7 @@
          <string/>
         </property>
         <property name="pixmap">
-         <pixmap>Icons/ZoomSmall.png</pixmap>
+         <pixmap resource="../woundanalyzer.qrc">:/Ui/Icons/ZoomSmall.png</pixmap>
         </property>
         <property name="textInteractionFlags">
          <set>Qt::NoTextInteraction</set>
@@ -197,7 +201,7 @@
          <string/>
         </property>
         <property name="pixmap">
-         <pixmap>Icons/Transparency.png</pixmap>
+         <pixmap resource="../woundanalyzer.qrc">:/Ui/Icons/Transparency.png</pixmap>
         </property>
        </widget>
       </item>
@@ -420,28 +424,28 @@
       </layout>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox">
+      <widget class="QDoubleSpinBox" name="doubleSpinBoxA">
        <property name="maximum">
         <double>999.990000000000009</double>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+      <widget class="QDoubleSpinBox" name="doubleSpinBoxB">
        <property name="maximum">
         <double>999.990000000000009</double>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+      <widget class="QDoubleSpinBox" name="doubleSpinBoxC">
        <property name="maximum">
         <double>999.990000000000009</double>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="spinBox">
+      <widget class="QSpinBox" name="spinBoxD">
        <property name="maximum">
         <number>99</number>
        </property>
@@ -543,7 +547,24 @@
          <widget class="QLineEdit" name="databaseNameLineEdit"/>
         </item>
         <item>
+         <widget class="QDateTimeEdit" name="databaseDateTimeEdit">
+          <property name="displayFormat">
+           <string>dd.MM.yyyy HH:mm</string>
+          </property>
+          <property name="calendarPopup">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPlainTextEdit" name="databaseNotesPlainTextEdit"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="databaseInfoLabel">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -553,8 +574,8 @@
   </widget>
   <action name="actionOpen">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Open.png</normaloff>Icons/Open.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Open.png</normaloff>:/Ui/Icons/Open.png</iconset>
    </property>
    <property name="text">
     <string>Open...</string>
@@ -568,8 +589,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Polygon.png</normaloff>Icons/Polygon.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Polygon.png</normaloff>:/Ui/Icons/Polygon.png</iconset>
    </property>
    <property name="text">
     <string>Polygon</string>
@@ -580,8 +601,8 @@
   </action>
   <action name="actionClear">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Clear.png</normaloff>Icons/Clear.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Clear.png</normaloff>:/Ui/Icons/Clear.png</iconset>
    </property>
    <property name="text">
     <string>Clear</string>
@@ -592,8 +613,8 @@
   </action>
   <action name="actionConnect">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Database.png</normaloff>Icons/Database.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Database.png</normaloff>:/Ui/Icons/Database.png</iconset>
    </property>
    <property name="text">
     <string>Connect...</string>
@@ -601,8 +622,8 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/About.png</normaloff>Icons/About.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/About.png</normaloff>:/Ui/Icons/About.png</iconset>
    </property>
    <property name="text">
     <string>About</string>
@@ -610,8 +631,8 @@
   </action>
   <action name="actionContext">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Help.png</normaloff>Icons/Help.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Help.png</normaloff>:/Ui/Icons/Help.png</iconset>
    </property>
    <property name="text">
     <string>Context</string>
@@ -625,8 +646,8 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Ruler.png</normaloff>Icons/Ruler.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Ruler.png</normaloff>:/Ui/Icons/Ruler.png</iconset>
    </property>
    <property name="text">
     <string>Ruler</string>
@@ -634,8 +655,8 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Save.png</normaloff>Icons/Save.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Save.png</normaloff>:/Ui/Icons/Save.png</iconset>
    </property>
    <property name="text">
     <string>Save...</string>
@@ -646,8 +667,8 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Configure.png</normaloff>Icons/Configure.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Configure.png</normaloff>:/Ui/Icons/Configure.png</iconset>
    </property>
    <property name="text">
     <string>Settings</string>
@@ -655,8 +676,8 @@
   </action>
   <action name="actionUpdate">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Edit.png</normaloff>Icons/Edit.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Edit.png</normaloff>:/Ui/Icons/Edit.png</iconset>
    </property>
    <property name="text">
     <string>Update</string>
@@ -667,8 +688,8 @@
   </action>
   <action name="actionZoom_In">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Zoom-In.png</normaloff>Icons/Zoom-In.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Zoom-In.png</normaloff>:/Ui/Icons/Zoom-In.png</iconset>
    </property>
    <property name="text">
     <string>Zoom In</string>
@@ -679,8 +700,8 @@
   </action>
   <action name="actionZoom_Out">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Zoom-Out.png</normaloff>Icons/Zoom-Out.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Zoom-Out.png</normaloff>:/Ui/Icons/Zoom-Out.png</iconset>
    </property>
    <property name="text">
     <string>Zoom Out</string>
@@ -691,8 +712,8 @@
   </action>
   <action name="actionExport_results">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Export.png</normaloff>Icons/Export.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Export.png</normaloff>:/Ui/Icons/Export.png</iconset>
    </property>
    <property name="text">
     <string>Export results...</string>
@@ -703,8 +724,8 @@
   </action>
   <action name="actionDelete">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Delete.png</normaloff>Icons/Delete.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Delete.png</normaloff>:/Ui/Icons/Delete.png</iconset>
    </property>
    <property name="text">
     <string>Delete</string>
@@ -712,8 +733,8 @@
   </action>
   <action name="actionAdd">
    <property name="icon">
-    <iconset>
-     <normaloff>Icons/Add.png</normaloff>Icons/Add.png</iconset>
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Add.png</normaloff>:/Ui/Icons/Add.png</iconset>
    </property>
    <property name="text">
     <string>Add</string>
@@ -728,6 +749,8 @@
    <header>Ui\imageinterface.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../woundanalyzer.qrc"/>
+ </resources>
  <connections/>
 </ui>

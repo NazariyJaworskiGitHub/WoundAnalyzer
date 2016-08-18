@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QStringList>
+#include <Image/imagemanager.h>
 
 #define DATABASENAME "myDatabase"
 DatabaseManager::DatabaseManager(QObject *parent):
@@ -103,11 +104,6 @@ QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
     QSqlRecord record;
     QString str;
 
-    QIcon patientIcon(QStringLiteral("Icons/Patient.png"));
-    QIcon doctorIcon(QStringLiteral("Icons/Doctor.png"));
-    QIcon woundIcon(QStringLiteral("Icons/Wound.png"));
-    QIcon surveyIcon(QStringLiteral("Icons/Survey.png"));
-
     if(DBrep) delete DBrep;
     DBrep = new DatabaseModel(parent);
 
@@ -125,11 +121,13 @@ QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
         }
         doctorsQuery.next();
         record = doctorsQuery.record();
-        DBrep->addDoctor(new Doctor(
-                             doctorIcon,
-                             QSqlDatabase::database(DATABASENAME).userName(),
-                             doctorsQuery.value(record.indexOf("ID")).toInt(),
-                             doctorsQuery.value(record.indexOf("Notes")).toString()));
+        Doctor * newDoctor = new Doctor(
+                    DBrep->doctorIcon,
+                    QSqlDatabase::database(DATABASENAME).userName(),
+                    doctorsQuery.value(record.indexOf("ID")).toInt(),
+                    doctorsQuery.value(record.indexOf("Notes")).toString());
+        DBrep->model->invisibleRootItem()->appendRow(newDoctor);
+        DBrep->doctor = newDoctor;
     }
     //////////////////////////////////////////////////////////////////////////////////////
     {
@@ -147,11 +145,11 @@ QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
         {
             record = patientsQuery.record();
             Patient * patient = new Patient(
-                        patientIcon,
+                        DBrep->patientIcon,
                         patientsQuery.value(record.indexOf("PatientName")).toString(),
                         patientsQuery.value(record.indexOf("ID")).toInt(),
                         patientsQuery.value(record.indexOf("Notes")).toString());
-            DBrep->doctor->addPatient(patient);
+            DBrep->doctor->appendRow(patient);
 
             ///////////////////////////////////////////////////////////////////////////////
             {
@@ -169,11 +167,11 @@ QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
                 {
                     record = woundsQuery.record();
                     Wound * wound = new Wound(
-                                woundIcon,
+                                DBrep->woundIcon,
                                 woundsQuery.value(record.indexOf("WoundName")).toString(),
                                 woundsQuery.value(record.indexOf("ID")).toInt(),
                                 woundsQuery.value(record.indexOf("Notes")).toString());
-                    patient->addWound(wound);
+                    patient->appendRow(wound);
                     ///////////////////////////////////////////////////////////////////////
                     {
                         QSqlQuery surveyQuery(QSqlDatabase::database(DATABASENAME));
@@ -190,12 +188,12 @@ QStandardItemModel *DatabaseManager::prepareDatabaseModel(QObject *parent)
                         {
                             record = surveyQuery.record();
                             Survey * survey = new Survey(
-                                        surveyIcon,
+                                        DBrep->surveyIcon,
                                         surveyQuery.value(record.indexOf("SurveyDate")).toDateTime(),
                                         surveyQuery.value(record.indexOf("ID")).toInt(),
                                         surveyQuery.value(record.indexOf("Notes")).toString(),
                                         surveyQuery.value(record.indexOf("WoundArea")).toDouble());
-                            wound->addSurvey(survey);
+                            wound->appendRow(survey);
                         }
                     }
                     ///////////////////////////////////////////////////////////////////////
@@ -302,6 +300,122 @@ bool DatabaseManager::update(Survey *target)
         return false;
     }
     return true;
+}
+
+Patient * DatabaseManager::add(Doctor *parent)
+{
+    QSqlQuery query(QSqlDatabase::database(DATABASENAME));
+    Log::StaticLogger::instance() << "[Database] adding new patient to doctor " + parent->name.toStdString() + "\n";
+    Patient *newTarget = new Patient(DBrep->patientIcon,"New patient", -1, "");
+    query.prepare(
+                "INSERT INTO Patients (DoctorID, PatientName)"
+                "VALUES ('" + QString::number(parent->id) + "','New patient');");
+    if(query.exec())
+        Log::StaticLogger::instance() << "[Database] new patient is added \n";
+    else
+    {
+        Log::StaticLogger::instance() << "[Database] <FAIL> " + query.lastError().text().toStdString() + "\n";
+        return nullptr;
+    }
+    newTarget->id = query.lastInsertId().toInt();
+    parent->appendRow(newTarget);
+    return newTarget;
+}
+
+Wound *DatabaseManager::add(Patient *parent)
+{
+    QSqlQuery query(QSqlDatabase::database(DATABASENAME));
+    Log::StaticLogger::instance() << "[Database] adding new wound to patient " + parent->name.toStdString() + "\n";
+    Wound *newTarget = new Wound(DBrep->woundIcon,"New wound", -1, "");
+    query.prepare(
+                "INSERT INTO Wounds (PatientID, WoundName)"
+                "VALUES ('" + QString::number(parent->id) + "','New wound');");
+    if(query.exec())
+        Log::StaticLogger::instance() << "[Database] new wound is added \n";
+    else
+    {
+        Log::StaticLogger::instance() << "[Database] <FAIL> " + query.lastError().text().toStdString() + "\n";
+        return nullptr;
+    }
+    newTarget->id = query.lastInsertId().toInt();
+    parent->appendRow(newTarget);
+    return newTarget;
+}
+
+Survey *DatabaseManager::add(Wound *parent)
+{
+    QSqlQuery query(QSqlDatabase::database(DATABASENAME));
+    Log::StaticLogger::instance() << "[Database] adding new survey to wound " + parent->name.toStdString() + "\n";
+    Survey *newTarget = new Survey(DBrep->surveyIcon, QDateTime::currentDateTime(), -1, "", 0);
+    newTarget->image = ImageManager::instance()->getImage().clone();
+    query.prepare(
+                "INSERT INTO Surveys (WoundID, SurveyDate, Image)"
+                "VALUES ('" + QString::number(parent->id) + "','" +
+                newTarget->date.toString("yyyy-MM-dd hh:mm:ss") + "',:imageData);");
+    std::vector<unsigned char> v;
+    cv::imencode(".jpg", newTarget->image.clone(), v);
+    query.bindValue(":imageData", QByteArray(reinterpret_cast<const char*>(v.data()),v.size()));
+    if(query.exec())
+        Log::StaticLogger::instance() << "[Database] new survey is added \n";
+    else
+    {
+        Log::StaticLogger::instance() << "[Database] <FAIL> " + query.lastError().text().toStdString() + "\n";
+        return nullptr;
+    }
+    newTarget->id = query.lastInsertId().toInt();
+    parent->appendRow(newTarget);
+    return newTarget;
+}
+
+Wound *DatabaseManager::del(Survey *target)
+{
+    QSqlQuery query(QSqlDatabase::database(DATABASENAME));
+    Log::StaticLogger::instance() << "[Database] deleting survey " + target->date.toString("dd.MM.yyyy hh:mm").toStdString() + "\n";
+    query.prepare( "DELETE FROM Surveys WHERE ID = " + QString::number(target->id));
+    if(query.exec())
+        Log::StaticLogger::instance() << "[Database] survey is deleted \n";
+    else
+    {
+        Log::StaticLogger::instance() << "[Database] <FAIL> " + query.lastError().text().toStdString() + "\n";
+        return nullptr;
+    }
+    Wound *parent = static_cast<Wound*>(target->parent());
+    parent->removeRow(target->row());
+    return parent;
+}
+
+Patient *DatabaseManager::del(Wound *target)
+{
+    QSqlQuery query(QSqlDatabase::database(DATABASENAME));
+    Log::StaticLogger::instance() << "[Database] deleting wound " + target->name.toStdString() + "\n";
+    query.prepare( "DELETE FROM Wounds WHERE ID = " + QString::number(target->id));
+    if(query.exec())
+        Log::StaticLogger::instance() << "[Database] wound is deleted \n";
+    else
+    {
+        Log::StaticLogger::instance() << "[Database] <FAIL> " + query.lastError().text().toStdString() + "\n";
+        return nullptr;
+    }
+    Patient *parent = static_cast<Patient*>(target->parent());
+    parent->removeRow(target->row());
+    return parent;
+}
+
+Doctor *DatabaseManager::del(Patient *target)
+{
+    QSqlQuery query(QSqlDatabase::database(DATABASENAME));
+    Log::StaticLogger::instance() << "[Database] deleting patient " + target->name.toStdString() + "\n";
+    query.prepare( "DELETE FROM Patients WHERE ID = " + QString::number(target->id));
+    if(query.exec())
+        Log::StaticLogger::instance() << "[Database] patient is deleted \n";
+    else
+    {
+        Log::StaticLogger::instance() << "[Database] <FAIL> " + query.lastError().text().toStdString() + "\n";
+        return nullptr;
+    }
+    Doctor *parent = static_cast<Doctor*>(target->parent());
+    parent->removeRow(target->row());
+    return parent;
 }
 
 QSqlError DatabaseManager::lastError() const

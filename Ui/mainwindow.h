@@ -35,17 +35,18 @@ public:
 private:
     QLabel *_mousePosition = nullptr;
     QLabel *_managementMode = nullptr;
-    QLabel *_rulerDistance = nullptr;
     QToolBar *_DBToolbar = nullptr;
     Ui::MainWindow *ui;
 
     QString _imageFileName;
 
+    void _reselectDBItem();
+    void _failMsg();
+
 private Q_SLOTS:
     void updateMousePositionStatus(QMouseEvent *ev);
     void updateManagementModeStatus(ImageInterface::ManagementMode mode);
     void updatePolygonArea(double area);
-    void updateRulerDistance(double distance);
     void updateImageFileNameAndResetZoom(QString fileName);
     void blockMainActions(bool b);
     void blockDatabaseActions(bool b);
@@ -61,7 +62,6 @@ private Q_SLOTS:
     void on_zoomSlider_valueChanged(int value);
     void on_rulerFactorDoubleSpinBox_valueChanged(double arg1);
     void on_transparencySlider_valueChanged(int value);
-    void on_actionRecord_triggered();
     void on_actionExport_results_triggered();
     void on_actionContext_triggered();
     void on_doubleSpinBox_valueChanged(double arg1);
@@ -72,6 +72,8 @@ private Q_SLOTS:
     void on_treeView_activated(const QModelIndex &index);
     void on_treeView_clicked(const QModelIndex &index);
     void on_actionUpdate_triggered();
+    void on_actionAdd_triggered();
+    void on_actionDelete_triggered();
 };
 
 #endif // MAINWINDOW_H

@@ -39,6 +39,7 @@ class ImageInterface : public QLabel
     public : int    rulerThickness              = 1;
 
     public : double woundsArea;
+    public : double rulerDistance;
 
     public : void applyPolygonsAndRulerPoints(
             const QVector<QPolygonF> &p,
@@ -75,7 +76,6 @@ class ImageInterface : public QLabel
 
     public : Q_SIGNAL void mouseMoved_signal(QMouseEvent *ev);
     public : Q_SIGNAL void updatePolygonArea_signal(double area);
-    public : Q_SIGNAL void updateRulerDistance_signal(double distance);
 
     public : void dragEnterEvent(QDragEnterEvent *ev) override;
     public : void dropEvent(QDropEvent *ev) override;
