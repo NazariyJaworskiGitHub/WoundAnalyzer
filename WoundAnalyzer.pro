@@ -59,3 +59,5 @@ FORMS    += Ui/mainwindow.ui \
 
 RESOURCES += \
     woundanalyzer.qrc
+
+RC_FILE += woundanalyzer.rc

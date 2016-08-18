@@ -222,7 +222,7 @@ void MainWindow::on_actionAbout_triggered()
     Log::StaticLogger::instance() << "[Actions] About triggered\n";
     QMessageBox msgBox;
     msgBox.setText("<b>Wound Analyzer</b>");
-    msgBox.setInformativeText("pre Aplha by Nazariy Jaworski 2016 (c)");
+    msgBox.setInformativeText("v0.02 by Nazariy Jaworski 2016 (c)");
     msgBox.setStandardButtons(QMessageBox::Ok);
     msgBox.setIcon(QMessageBox::Information);
     msgBox.exec();
