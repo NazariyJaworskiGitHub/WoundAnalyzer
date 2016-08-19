@@ -17,6 +17,7 @@
 #include "Ui/imageinterface.h"
 #include "Ui/settingswidget.h"
 #include "Ui/databaseconnectionwidget.h"
+#include "Ui/chartwidget.h"
 
 #include "Utilities/Logger/logger.h"
 
@@ -74,6 +75,7 @@ private Q_SLOTS:
     void on_actionUpdate_triggered();
     void on_actionAdd_triggered();
     void on_actionDelete_triggered();
+    void on_actionDynamics_triggered();
 };
 
 #endif // MAINWINDOW_H

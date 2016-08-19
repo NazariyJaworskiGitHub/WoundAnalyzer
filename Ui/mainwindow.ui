@@ -250,6 +250,8 @@
     <addaction name="actionUpdate"/>
     <addaction name="actionDelete"/>
     <addaction name="actionAdd"/>
+    <addaction name="separator"/>
+    <addaction name="actionDynamics"/>
    </widget>
    <widget class="QMenu" name="menuImage">
     <property name="title">
@@ -738,6 +740,15 @@
    </property>
    <property name="text">
     <string>Add</string>
+   </property>
+  </action>
+  <action name="actionDynamics">
+   <property name="icon">
+    <iconset resource="../woundanalyzer.qrc">
+     <normaloff>:/Ui/Icons/Chart.png</normaloff>:/Ui/Icons/Chart.png</iconset>
+   </property>
+   <property name="text">
+    <string>Dynamics</string>
    </property>
   </action>
  </widget>

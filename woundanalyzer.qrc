@@ -22,5 +22,6 @@
         <file>Ui/Icons/Zoom-In.png</file>
         <file>Ui/Icons/Zoom-Out.png</file>
         <file>Ui/Icons/ZoomSmall.png</file>
+        <file>Ui/Icons/Chart.png</file>
     </qresource>
 </RCC>

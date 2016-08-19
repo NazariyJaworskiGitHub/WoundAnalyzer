@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _DBToolbar->addAction(ui->actionAdd);
     _DBToolbar->addAction(ui->actionDelete);
     _DBToolbar->addAction(ui->actionUpdate);
+    _DBToolbar->addAction(ui->actionDynamics);
     _DBToolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     ui->databaseHolderContents->layout()->addWidget(_DBToolbar);
     ui->databaseDateTimeEdit->hide();
@@ -139,8 +140,10 @@ void MainWindow::blockDatabaseActions(bool b)
     ui->actionAdd->setDisabled(b);
     ui->actionDelete->setDisabled(b);
     ui->actionUpdate->setDisabled(b);
+    ui->actionDynamics->setDisabled(b);
     ui->databaseNameLineEdit->setDisabled(b);
     ui->databaseNotesPlainTextEdit->setDisabled(b);
+    ui->databaseDateTimeEdit->setDisabled(b);
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -222,7 +225,7 @@ void MainWindow::on_actionAbout_triggered()
     Log::StaticLogger::instance() << "[Actions] About triggered\n";
     QMessageBox msgBox;
     msgBox.setText("<b>Wound Analyzer</b>");
-    msgBox.setInformativeText("v0.02 by Nazariy Jaworski 2016 (c)");
+    msgBox.setInformativeText("v0.03 by Nazariy Jaworski 2016 (c)");
     msgBox.setStandardButtons(QMessageBox::Ok);
     msgBox.setIcon(QMessageBox::Information);
     msgBox.exec();
@@ -318,11 +321,14 @@ void MainWindow::on_actionExport_results_triggered()
         //cursor.movePosition(QTextCursor::End, QTextCursor::MoveAnchor);
         cursor.insertHtml(
                     "<h1><center>Wound Analysis Report [" +
-                    QString::number(QDate::currentDate().month()) + "." +
                     QString::number(QDate::currentDate().day()) + "." +
+                    QString::number(QDate::currentDate().month()) + "." +
                     QString::number(QDate::currentDate().year()) + "]</<center></h1>" +
                     "<p><b>Image: </b> " + _imageFileName + "</p><br>");
-        cursor.insertImage(ImageManager::instance()->getImageAsQImage());
+        cursor.insertImage(ImageManager::instance()->getImageAsQImage().scaled(
+                               printer.pageRect(QPrinter::Point).size().width(),
+                               printer.pageRect(QPrinter::Point).size().width(),
+                               Qt::KeepAspectRatio));
         cursor.insertHtml(
                     "<br><p><b>Total wound area:</b> " + ui->lineEditArea->text() + " sm<sup>2</sup>" +
                     "</p>");
@@ -482,6 +488,7 @@ void MainWindow::on_treeView_clicked(const QModelIndex &index)
         ui->actionAdd->setText("Add");
         ui->actionDelete->setText("Delete\nsurvey");
         ui->actionUpdate->setText("Update\nsurvey");
+        ui->actionDynamics->setDisabled(true);
         break;
     }
     case WOUND_TYPE:
@@ -497,6 +504,10 @@ void MainWindow::on_treeView_clicked(const QModelIndex &index)
         ui->actionAdd->setText("Add\nsurvey");
         ui->actionDelete->setText("Delete\nwound");
         ui->actionUpdate->setText("Update\nwound");
+        if(wound->hasChildren())
+            ui->actionDynamics->setEnabled(true);
+        else
+            ui->actionDynamics->setDisabled(true);
         break;
     }
     case PATIENT_TYPE:
@@ -507,6 +518,7 @@ void MainWindow::on_treeView_clicked(const QModelIndex &index)
         ui->actionAdd->setText("Add\nwound");
         ui->actionDelete->setText("Delete\npatient");
         ui->actionUpdate->setText("Update\npatient");
+        ui->actionDynamics->setDisabled(true);
         break;
     }
     case DOCTOR_TYPE:
@@ -520,6 +532,7 @@ void MainWindow::on_treeView_clicked(const QModelIndex &index)
         ui->actionAdd->setText("Add\npatient");
         ui->actionDelete->setText("Delete");
         ui->actionUpdate->setText("Update\ndoctor");
+        ui->actionDynamics->setDisabled(true);
         break;
     }
     }
@@ -724,4 +737,13 @@ void MainWindow::on_actionDelete_triggered()
         break;
     }
     }
+}
+
+void MainWindow::on_actionDynamics_triggered()
+{
+    Log::StaticLogger::instance() << "[Actions] Dynamics triggered\n";
+    QStandardItem *item = static_cast<QStandardItemModel*>(ui->treeView->model())->itemFromIndex(
+                ui->treeView->selectionModel()->currentIndex());
+    ChartWidget *chW = new ChartWidget(static_cast<Wound*>(item), this);
+    chW->exec();
 }

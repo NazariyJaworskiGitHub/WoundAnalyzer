@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 CONFIG += c++11
-CONFIG += no_keywords
+#CONFIG += no_keywords
 #CONFIG += console
 
 QT += core
@@ -36,7 +36,10 @@ SOURCES += main.cpp\
     Ui/databaseconnectionedititemwidget.cpp \
     Image/imagemanager.cpp \
     Ui/imageinterface.cpp \
-    Ui/settingswidget.cpp
+    Ui/settingswidget.cpp \
+    qcustomplot/qcustomplot.cpp \
+    Ui/chartwidget.cpp \
+    qcustomplot/qcpdocumentobject.cpp
 
 HEADERS  += Ui/mainwindow.h \
     DataBase/databasemanager.h \
@@ -50,12 +53,16 @@ HEADERS  += Ui/mainwindow.h \
     Ui/imageinterface.h \
     Ui/settingswidget.h \
     Utilities/mathutilities.h \
-    DataBase/databasemodel.h
+    DataBase/databasemodel.h \
+    qcustomplot/qcustomplot.h \
+    Ui/chartwidget.h \
+    qcustomplot/qcpdocumentobject.h
 
 FORMS    += Ui/mainwindow.ui \
     Ui/databaseconnectionwidget.ui \
     Ui/databaseconnectionedititemwidget.ui \
-    Ui/settingswidget.ui
+    Ui/settingswidget.ui \
+    Ui/chartwidget.ui
 
 RESOURCES += \
     woundanalyzer.qrc
