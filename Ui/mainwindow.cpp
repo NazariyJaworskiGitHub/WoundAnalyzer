@@ -543,12 +543,19 @@ void MainWindow::on_actionUpdate_triggered()
         {
             Survey *typedItem = static_cast<Survey*>(item);
             typedItem->date = ui->databaseDateTimeEdit->dateTime();
-            typedItem->setText(typedItem->date.toString("dd.MM.yyyy hh:mm")+ " " + QString::number(ui->image->woundsArea) + "sm2");
+            typedItem->setText(typedItem->date.toString("dd.MM.yyyy hh:mm") + " " + ((ui->image->woundsArea != 0) ? (QString::number(ui->image->woundsArea) + "sm2") : ("")));
             typedItem->notes = ui->databaseNotesPlainTextEdit->toPlainText();
             typedItem->image = ImageManager::instance()->getImage().clone();
+
+            double currentZoom = ImageManager::instance()->zoomFactor;
+            ui->image->zoom(1.0-currentZoom);
+
             typedItem->applyPolygonsAndRulerPoints(
                         ui->image->polygons,
                         ui->image->rulerPoints);
+
+            ui->image->zoom(currentZoom-1.0);
+
             typedItem->rulerFactor = ui->rulerFactorDoubleSpinBox->value();
             typedItem->woundArea = ui->image->woundsArea;
             if(!DatabaseManager::instance()->update(typedItem)) _failMsg();
@@ -601,17 +608,21 @@ void MainWindow::on_actionAdd_triggered()
         {
             ui->treeView->setCurrentIndex(newTarget->index());
             on_treeView_clicked(newTarget->index());
+
+            double currentZoom = ImageManager::instance()->zoomFactor;
+            ui->image->zoom(1.0-currentZoom);
+
             newTarget->applyPolygonsAndRulerPoints(
                         ui->image->polygons,
                         ui->image->rulerPoints);
+
+            ui->image->zoom(currentZoom-1.0);
+
+            newTarget->setText(newTarget->date.toString("dd.MM.yyyy hh:mm") + " " + ((ui->image->woundsArea != 0) ? (QString::number(ui->image->woundsArea) + "sm2") : ("")));
             newTarget->rulerFactor = ui->rulerFactorDoubleSpinBox->value();
             newTarget->woundArea = ui->image->woundsArea;
             if(!DatabaseManager::instance()->update(newTarget)) _failMsg();
-            else
-            {
-                ui->treeView->setCurrentIndex(newTarget->index());
-                on_treeView_clicked(newTarget->index());
-            }
+            ui->treeView->show();
         }
         else _failMsg();
         break;
